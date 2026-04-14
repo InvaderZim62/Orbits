@@ -12,11 +12,17 @@ struct Constant {
     static let sunRadius: Float = 0.9
     static let earthRadius: Float = 0.5
     static let moonRadius: Float = 0.2 // 0.27 * earthRadius
-    static let sunToEarthDistance: Float = 3
+    static let sunToEarthDistance: Float = 3.4
     static let earthToMoonDistance: Float = 1 // 0.00256 * sunToEarthDistance
 }
 
 class ViewController: UIViewController {
+    
+    var earth: Entity!
+    var moon: Entity!
+
+    var earthAngle: Float = 0
+    var moonAngle: Float = 0
 
     @IBOutlet var arViewCC: ARViewCameraControl!  // subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
 
@@ -30,17 +36,37 @@ class ViewController: UIViewController {
         sun.position = [0, 0, 0]
         worldAnchor.addChild(sun)
         
-        let earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
+        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
         earth.position = [Constant.sunToEarthDistance, 0, 0]
         worldAnchor.addChild(earth)
 
-        let moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
+        moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
         moon.position = earth.position + [Constant.earthToMoonDistance, 0, 0]
         worldAnchor.addChild(moon)
 
         let orbitalPlane = createOrbitalPlane()
         orbitalPlane.position = [0, 0, 0]
         worldAnchor.addChild(orbitalPlane)
+        
+        Timer.scheduledTimer(timeInterval: 0.02,
+                             target: self,
+                             selector: #selector(orbit),
+                             userInfo: nil,
+                             repeats: true)
+    }
+
+    @objc func orbit() {
+        let deltaAngle: Float = 0.005
+        
+        earthAngle -= deltaAngle
+        let earthX = cos(earthAngle) * Constant.sunToEarthDistance
+        let earthZ = sin(earthAngle) * Constant.sunToEarthDistance
+        earth.position = [earthX, 0, earthZ]
+        
+        moonAngle -= 13.37 * deltaAngle
+        let moonX = cos(moonAngle) * Constant.earthToMoonDistance
+        let moonZ = sin(moonAngle) * Constant.earthToMoonDistance
+        moon.position = earth.position + [moonX, 0, moonZ]
     }
     
     private func createSphereEntity(radius: Float, color: UIColor) -> ModelEntity {
