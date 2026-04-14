@@ -15,13 +15,27 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <arView multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="l7F-Iq-OmM" customClass="ARViewCameraControl" customModule="Orbits" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                            </arView>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="l7F-Iq-OmM" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="9CY-Ph-RuU"/>
+                            <constraint firstItem="l7F-Iq-OmM" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="ENX-ep-L5a"/>
+                            <constraint firstAttribute="bottom" secondItem="l7F-Iq-OmM" secondAttribute="bottom" id="Eke-W8-lvx"/>
+                            <constraint firstItem="l7F-Iq-OmM" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="a7K-FA-7Mx"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="arViewCC" destination="l7F-Iq-OmM" id="Osv-BX-dq8"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="69" y="137"/>
+            <point key="canvasLocation" x="67.692307692307693" y="136.49289099526067"/>
         </scene>
     </scenes>
     <resources>
