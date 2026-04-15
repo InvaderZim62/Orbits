@@ -20,9 +20,12 @@ class ViewController: UIViewController {
     
     var earth: Entity!
     var moon: Entity!
-
+    var pastPosition = simd_float3.zero
+//    var pastMoonPosition = simd_float3.zero
     var earthAngle: Float = 0
     var moonAngle: Float = 0
+
+    var worldAnchor = AnchorEntity()
 
     @IBOutlet var arViewCC: ARViewCameraControl!  // subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
 
@@ -30,7 +33,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         arViewCC.environment.background = .color(.lightGray)
-        let worldAnchor = arViewCC.worldAnchor
+        worldAnchor = arViewCC.worldAnchor
         
         let sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
         sun.position = [0, 0, 0]
@@ -38,15 +41,19 @@ class ViewController: UIViewController {
         
         earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
         earth.position = [Constant.sunToEarthDistance, 0, 0]
+        pastPosition = earth.position
         worldAnchor.addChild(earth)
 
         moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
         moon.position = earth.position + [Constant.earthToMoonDistance, 0, 0]
+//        pastMoonPosition = moon.position
         worldAnchor.addChild(moon)
 
         let orbitalPlane = createOrbitalPlane()
         orbitalPlane.position = [0, 0, 0]
         worldAnchor.addChild(orbitalPlane)
+        
+        drawEarthPath()
         
         Timer.scheduledTimer(timeInterval: 0.02,
                              target: self,
@@ -54,19 +61,54 @@ class ViewController: UIViewController {
                              userInfo: nil,
                              repeats: true)
     }
-
+    
     @objc func orbit() {
-        let deltaAngle: Float = 0.005
-        
-        earthAngle -= deltaAngle
+        let deltaEarthAngle: Float = 0.005
+        let deltaMoonAngle = 13.37 * deltaEarthAngle
+
+        earthAngle -= deltaEarthAngle
         let earthX = cos(earthAngle) * Constant.sunToEarthDistance
         let earthZ = sin(earthAngle) * Constant.sunToEarthDistance
         earth.position = [earthX, 0, earthZ]
         
-        moonAngle -= 13.37 * deltaAngle
+        moonAngle -= deltaMoonAngle
         let moonX = cos(moonAngle) * Constant.earthToMoonDistance
         let moonZ = sin(moonAngle) * Constant.earthToMoonDistance
         moon.position = earth.position + [moonX, 0, moonZ]
+        
+//        // draw moon's path on the fly
+//        if fmod(moonAngle, 0.3) > -deltaMoonAngle {  // ~1:5
+//            drawLine(from: pastMoonPosition, to: moon.position)
+//            pastMoonPosition = moon.position
+//        }
+    }
+    
+    private func drawEarthPath() {
+        for index in 0..<361 {
+            let angle = Float(index) * .pi / 180
+            let x = cos(angle) * Constant.sunToEarthDistance
+            let z = sin(angle) * Constant.sunToEarthDistance
+            let position = simd_float3(x, 0, z)
+            drawLine(from: pastPosition, to: position)
+            pastPosition = position
+        }
+    }
+    
+    // create lines out of boxes
+    private func drawLine(from start: simd_float3, to end: simd_float3) {
+        let midpoint = (start + end) / 2
+        let direction = normalize(end - start)
+        let distance = length(end - start)
+        let lineWidth: Float = 0.05
+        
+        let lineMesh = MeshResource.generateBox(width: lineWidth, height: lineWidth, depth: distance, cornerRadius: lineWidth / 2)
+        let material = SimpleMaterial(color: .black, isMetallic: false)
+        let lineEntity = ModelEntity(mesh: lineMesh, materials: [material])
+        
+        lineEntity.orientation = simd_quatf(from: simd_float3(0, 0, 1), to: direction)
+        lineEntity.position = midpoint
+        
+        worldAnchor.addChild(lineEntity)
     }
     
     private func createSphereEntity(radius: Float, color: UIColor) -> ModelEntity {
