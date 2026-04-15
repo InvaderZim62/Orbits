@@ -14,6 +14,9 @@ struct Constant {
     static let moonRadius: Float = 0.2 // 0.27 * earthRadius
     static let sunToEarthDistance: Float = 3.4
     static let earthToMoonDistance: Float = 1 // 0.00256 * sunToEarthDistance
+    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
+//    static let lunarOrbitInclination: Float = 20 * .pi / 180
+    static let showMoonPath = false
 }
 
 class ViewController: UIViewController {
@@ -21,7 +24,7 @@ class ViewController: UIViewController {
     var earth: Entity!
     var moon: Entity!
     var pastPosition = simd_float3.zero
-//    var pastMoonPosition = simd_float3.zero
+    var pastMoonPosition = simd_float3.zero
     var earthAngle: Float = 0
     var moonAngle: Float = 0
 
@@ -45,14 +48,19 @@ class ViewController: UIViewController {
         worldAnchor.addChild(earth)
 
         moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
-        moon.position = earth.position + [Constant.earthToMoonDistance, 0, 0]
-//        pastMoonPosition = moon.position
+        moon.position = earth.position + earthToMoonPosition(orbitAngle: 0)
+        pastMoonPosition = moon.position
         worldAnchor.addChild(moon)
 
-        let orbitalPlane = createOrbitalPlane()
-        orbitalPlane.position = [0, 0, 0]
-        worldAnchor.addChild(orbitalPlane)
-        
+        let eclipticPlane = createEclipticPlane()
+        eclipticPlane.position = [0, 0, 0]
+        worldAnchor.addChild(eclipticPlane)
+
+        let lunarOrbitPlane = createLunarOrbitPlane()
+        lunarOrbitPlane.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])
+        lunarOrbitPlane.position = [0, 0, 0]
+        earth.addChild(lunarOrbitPlane)
+
         drawEarthPath()
         
         Timer.scheduledTimer(timeInterval: 0.02,
@@ -66,21 +74,27 @@ class ViewController: UIViewController {
         let deltaEarthAngle: Float = 0.005
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
-        earthAngle -= deltaEarthAngle
+        earthAngle += deltaEarthAngle
         let earthX = cos(earthAngle) * Constant.sunToEarthDistance
-        let earthZ = sin(earthAngle) * Constant.sunToEarthDistance
+        let earthZ = -sin(earthAngle) * Constant.sunToEarthDistance
         earth.position = [earthX, 0, earthZ]
         
-        moonAngle -= deltaMoonAngle
-        let moonX = cos(moonAngle) * Constant.earthToMoonDistance
-        let moonZ = sin(moonAngle) * Constant.earthToMoonDistance
-        moon.position = earth.position + [moonX, 0, moonZ]
+        moonAngle += deltaMoonAngle
+        moon.position = earth.position + earthToMoonPosition(orbitAngle: moonAngle)
         
-//        // draw moon's path on the fly
-//        if fmod(moonAngle, 0.3) > -deltaMoonAngle {  // ~1:5
-//            drawLine(from: pastMoonPosition, to: moon.position)
-//            pastMoonPosition = moon.position
-//        }
+        if Constant.showMoonPath {
+            // draw moon's path on the fly
+            if fmod(moonAngle, 0.3) > -deltaMoonAngle {  // ~1:5
+                drawLine(from: pastMoonPosition, to: moon.position)
+                pastMoonPosition = moon.position
+            }
+        }
+    }
+    
+    private func earthToMoonPosition(orbitAngle: Float) -> simd_float3 {
+        simd_float3(cos(Constant.lunarOrbitInclination * cos(orbitAngle)) * cos(orbitAngle),
+                    sin(Constant.lunarOrbitInclination * cos(orbitAngle)),
+                    -cos(Constant.lunarOrbitInclination * cos(orbitAngle)) * sin(orbitAngle)) * Constant.earthToMoonDistance
     }
     
     private func drawEarthPath() {
@@ -114,16 +128,21 @@ class ViewController: UIViewController {
     private func createSphereEntity(radius: Float, color: UIColor) -> ModelEntity {
         let material = SimpleMaterial(color: color, isMetallic: false)
         let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
-        sphereEntity.model?.materials = [material]  // default checkerboard pattern
-        sphereEntity.generateCollisionShapes(recursive: false)  // needed for .debugOptions
+        sphereEntity.model?.materials = [material]  // comment out for default checkerboard pattern
         return sphereEntity
     }
     
-    private func createOrbitalPlane() -> ModelEntity {
+    private func createEclipticPlane() -> ModelEntity {
         let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), isMetallic: false)
         let planeEntity = ModelEntity(mesh: .generateBox(size: [10, 0, 10]))
         planeEntity.model?.materials = [material]
-        planeEntity.generateCollisionShapes(recursive: false)
+        return planeEntity
+    }
+    
+    private func createLunarOrbitPlane() -> ModelEntity {
+        let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), isMetallic: false)
+        let planeEntity = ModelEntity(mesh: .generateBox(size: [3, 0, 3]))
+        planeEntity.model?.materials = [material]
         return planeEntity
     }
 }
