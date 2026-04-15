@@ -14,8 +14,10 @@ struct Constant {
     static let moonRadius: Float = 0.2 // 0.27 * earthRadius
     static let sunToEarthDistance: Float = 3.4
     static let earthToMoonDistance: Float = 1 // 0.00256 * sunToEarthDistance
-    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
-//    static let lunarOrbitInclination: Float = 20 * .pi / 180
+//    static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt
+    static let earthObliquity: Float = 30 * .pi / 180  // exaggerated
+//    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
+    static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
     static let showMoonPath = false
 }
 
@@ -42,7 +44,8 @@ class ViewController: UIViewController {
         sun.position = [0, 0, 0]
         worldAnchor.addChild(sun)
         
-        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
+        earth = createSphereEntity(radius: Constant.earthRadius)//, color: .blue)
+        earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])
         earth.position = [Constant.sunToEarthDistance, 0, 0]
         pastPosition = earth.position
         worldAnchor.addChild(earth)
@@ -57,7 +60,7 @@ class ViewController: UIViewController {
         worldAnchor.addChild(eclipticPlane)
 
         let lunarOrbitPlane = createLunarOrbitPlane()
-        lunarOrbitPlane.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])
+        lunarOrbitPlane.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination + Constant.earthObliquity, axis: [0, 0, 1])
         lunarOrbitPlane.position = [0, 0, 0]
         earth.addChild(lunarOrbitPlane)
 
@@ -125,23 +128,28 @@ class ViewController: UIViewController {
         worldAnchor.addChild(lineEntity)
     }
     
-    private func createSphereEntity(radius: Float, color: UIColor) -> ModelEntity {
-        let material = SimpleMaterial(color: color, isMetallic: false)
+    private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
         let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
-        sphereEntity.model?.materials = [material]  // comment out for default checkerboard pattern
+        if let color {
+            let material = SimpleMaterial(color: color, isMetallic: false)
+            sphereEntity.model?.materials = [material]
+        } else {
+            // default swirl pattern
+            sphereEntity.generateCollisionShapes(recursive: false)  // needed for .debugOptions
+        }
         return sphereEntity
     }
     
     private func createEclipticPlane() -> ModelEntity {
-        let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), isMetallic: false)
         let planeEntity = ModelEntity(mesh: .generateBox(size: [10, 0, 10]))
+        let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), isMetallic: false)
         planeEntity.model?.materials = [material]
         return planeEntity
     }
     
     private func createLunarOrbitPlane() -> ModelEntity {
-        let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), isMetallic: false)
         let planeEntity = ModelEntity(mesh: .generateBox(size: [3, 0, 3]))
+        let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), isMetallic: false)
         planeEntity.model?.materials = [material]
         return planeEntity
     }

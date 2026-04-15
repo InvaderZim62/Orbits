@@ -21,7 +21,7 @@ class ARViewCameraControl: ARView {
         super.init(coder: decoder)
         
         cameraMode = .nonAR  // don't use iPhone camera
-//        debugOptions = [.showWorldOrigin, .showPhysics]  // show axes - requires entity.generateCollisionShapes(recursive:)
+        debugOptions = [.showWorldOrigin, .showPhysics]  // show axes - requires entity.generateCollisionShapes(recursive:)
 
         camera.orientation = camera.orientation.rotatedBy(deltaPitch: -0.32 * .pi, deltaYaw: 0, deltaRoll: 0)
         camera.position = convertVectorFromLocalToWorld(vector: cameraOffset, camera.orientation)
