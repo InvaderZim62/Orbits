@@ -27,12 +27,12 @@ class ViewController: UIViewController {
     var moon: Entity!
     var pastPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
-    var earthAngle: Float = 0  // orbital angle around the sun
-    var moonAngle: Float = 0  // orbital angle around the earth
+    var earthOrbitAngle: Float = 0  // orbital angle around the sun
+    var moonOrbitAngle: Float = 0  // orbital angle around the earth
 
-    var sunAnchor = AnchorEntity()
-    var earthContainer = ModelEntity()
-    var moonContainer = ModelEntity()
+    var worldAnchor = AnchorEntity()
+    var earthContainer = ModelEntity()  // moves with earth, but stays level (earth's north pole is tiled in container)
+    var moonContainer = ModelEntity()  // moves with earth, but tilted by the lunar inclination
 
     @IBOutlet var arViewCC: ARViewCameraControl!  // subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
 
@@ -40,28 +40,28 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         arViewCC.environment.background = .color(.lightGray)
-        sunAnchor = arViewCC.worldAnchor
+        worldAnchor = arViewCC.worldAnchor
         
         let sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
-        sunAnchor.addChild(sun)
+        worldAnchor.addChild(sun)
         
         earth = createSphereEntity(radius: Constant.earthRadius)//, color: .blue)
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
-        sunAnchor.addChild(earthContainer)
+        worldAnchor.addChild(earthContainer)
         pastPosition = earthContainer.position
 
         moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
-        moon.position = moonPosition(orbitAngle: 0)
+        moon.position = moonPosition(orbitAngle: 0)  // in moonContainer
         moonContainer.addChild(moon)
-        moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])
+        moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
         earthContainer.addChild(moonContainer)  // moonContainer centered on Earth, but tilted
         pastMoonPosition = moon.position
 
         let eclipticPlane = createEclipticPlane()  // plane around sun
         eclipticPlane.position = [0, 0, 0]
-        sun.addChild(eclipticPlane)
+        worldAnchor.addChild(eclipticPlane)
 
         let lunarOrbitPlane = createLunarOrbitPlane()
         lunarOrbitPlane.position = [0, 0, 0]
@@ -80,26 +80,24 @@ class ViewController: UIViewController {
         let deltaEarthAngle: Float = 0.005
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
-        earthAngle += deltaEarthAngle
-        let earthX = cos(earthAngle) * Constant.sunToEarthDistance
-        let earthZ = -sin(earthAngle) * Constant.sunToEarthDistance
-        earthContainer.position = [earthX, 0, earthZ]
+        earthOrbitAngle += deltaEarthAngle
+        earthContainer.position = [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
         
-        moonAngle += deltaMoonAngle
-        moon.position = moonPosition(orbitAngle: moonAngle)
+        moonOrbitAngle += deltaMoonAngle
+        moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
         
         if Constant.showMoonPath {
             // draw moon's path around Earth, on the fly
-            if fmod(moonAngle, 0.3) > -deltaMoonAngle {  // ~1:5
+            if fmod(moonOrbitAngle, 0.3) > -deltaMoonAngle {  // ~1:5
                 let lineSegment = createLine(from: pastMoonPosition, to: moon.position)  // this creates circle around earth
-                lineSegment.position = moonContainer.convert(position: lineSegment.position, to: sunAnchor)
-                sunAnchor.addChild(lineSegment)
+                lineSegment.position = moonContainer.convert(position: lineSegment.position, to: worldAnchor)
+                worldAnchor.addChild(lineSegment)
                 pastMoonPosition = moon.position
             }
         }
     }
     
-    // moon position relative to earth
+    // moon position within moon container
     private func moonPosition(orbitAngle: Float) -> simd_float3 {
         simd_float3(cos(orbitAngle), 0, -sin(orbitAngle)) * Constant.earthToMoonDistance
     }
@@ -111,7 +109,7 @@ class ViewController: UIViewController {
             let z = sin(angle) * Constant.sunToEarthDistance
             let position = simd_float3(x, 0, z)
             let lineSegment = createLine(from: pastPosition, to: position)
-            sunAnchor.addChild(lineSegment)
+            worldAnchor.addChild(lineSegment)
             pastPosition = position
         }
     }
