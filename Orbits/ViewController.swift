@@ -90,8 +90,9 @@ class ViewController: UIViewController {
         if Constant.showMoonPath {
             // draw moon's path around Earth, on the fly
             if fmod(moonAngle, 0.3) > -deltaMoonAngle {  // ~1:5
-                let lineSegment = createLine(from: pastMoonPosition, to: moon.position)
-                earthAnchor.addChild(lineSegment)
+                let lineSegment = createLine(from: pastMoonPosition, to: moon.position)  // this creates circle around earth
+                lineSegment.position = earthAnchor.convert(position: lineSegment.position, to: sunAnchor)
+                sunAnchor.addChild(lineSegment)
                 pastMoonPosition = moon.position
             }
         }
