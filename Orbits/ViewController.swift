@@ -18,7 +18,7 @@ struct Constant {
     static let earthObliquity: Float = 30 * .pi / 180  // exaggerated
 //    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
     static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
-    static let showMoonPath = true
+    static let showMoonPath = false
 }
 
 class ViewController: UIViewController {
@@ -69,7 +69,7 @@ class ViewController: UIViewController {
 
         drawEarthPath()
         
-        Timer.scheduledTimer(timeInterval: 0.02,
+        Timer.scheduledTimer(timeInterval: 0.05,
                              target: self,
                              selector: #selector(orbit),
                              userInfo: nil,
@@ -77,14 +77,17 @@ class ViewController: UIViewController {
     }
     
     @objc func orbit() {
-        let deltaEarthAngle: Float = 0.005
+        let deltaEarthAngle: Float = 0.004
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
         earthOrbitAngle += deltaEarthAngle
         earthContainer.position = [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
-        
+
         moonOrbitAngle += deltaMoonAngle
         moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
+
+        let transform = Transform(pitch: 0, yaw: 4 * deltaMoonAngle, roll: 0)  // it's really 27.3 x
+        earth.setTransformMatrix(transform.matrix, relativeTo: earth)  // incremental rotation
         
         if Constant.showMoonPath {
             // draw moon's path around Earth, on the fly
