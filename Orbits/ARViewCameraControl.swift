@@ -23,7 +23,8 @@ class ARViewCameraControl: ARView {
         cameraMode = .nonAR  // don't use iPhone camera
         debugOptions = [.showWorldOrigin, .showPhysics]  // show axes - requires entity.generateCollisionShapes(recursive:)
 
-        camera.orientation = camera.orientation.rotatedBy(deltaPitch: -0.32 * .pi, deltaYaw: 0, deltaRoll: 0)
+        let transform = Transform(pitch: -0.32 * .pi, yaw: 0, roll: 0)
+        camera.setTransformMatrix(transform.matrix, relativeTo: camera)  // incremental rotation
         camera.position = convertVectorFromLocalToWorld(vector: cameraOffset, camera.orientation)
         worldAnchor.addChild(camera)
         scene.addAnchor(worldAnchor)
@@ -54,9 +55,12 @@ class ARViewCameraControl: ARView {
             // deltaUp rotates the scene/camera about the camera x-axis;
             // deltaRight must be converted to camera coordinates before adding to deltaUp
             let deltaCamera = convertVectorFromWorldToLocal(vector: simd_float3(0, -deltaRight, 0), camera.orientation)
-            camera.orientation = camera.orientation.rotatedBy(deltaPitch: deltaCamera.x + deltaUp,
-                                                              deltaYaw: deltaCamera.y,
-                                                              deltaRoll: deltaCamera.z)
+            
+            let transform = Transform(pitch: deltaCamera.x + deltaUp,
+                                      yaw: deltaCamera.y,
+                                      roll: deltaCamera.z)
+            camera.setTransformMatrix(transform.matrix, relativeTo: camera)  // incremental rotation
+
         } else if recognizer.numberOfTouches == 2 {
             // offset camera
             let deltaRight = Float(translation.x / 75)
@@ -81,7 +85,8 @@ class ARViewCameraControl: ARView {
     @objc func handleRotation(recognizer: UIRotationGestureRecognizer) {
         // rotation rotates the scene/camera about the camera z-axis (ie. center of screen)
         let deltaRoll = Float(recognizer.rotation)
-        camera.orientation = camera.orientation.rotatedBy(deltaPitch: 0, deltaYaw: 0, deltaRoll: deltaRoll)
+        let transform = Transform(pitch: 0, yaw: 0, roll: deltaRoll)
+        camera.setTransformMatrix(transform.matrix, relativeTo: camera)  // incremental rotation
         let deltaQuat = simd_quatf(angle: deltaRoll, axis: [0, 0, 1])
         cameraOffset = convertVectorFromWorldToLocal(vector: cameraOffset, deltaQuat)
         recognizer.rotation = 0
@@ -93,29 +98,5 @@ class ARViewCameraControl: ARView {
     
     private func convertVectorFromWorldToLocal(vector: simd_float3, _ quat: simd_quatf) -> simd_float3 {
         quat.inverse.act(vector)
-    }
-}
-
-extension simd_quatf {
-    // incrementally rotate quaternion
-    func rotatedBy(deltaPitch: Float, deltaYaw: Float, deltaRoll: Float) -> simd_quatf {
-        let quat = self.vector
-        
-        // quaternion rates (aeronautical standard, except: p -> q, q -> r, r -> p)
-        let deltaQw = (-quat.x * deltaPitch - quat.y * deltaYaw - quat.z * deltaRoll) / 2
-        let deltaQx = ( quat.w * deltaPitch - quat.z * deltaYaw + quat.y * deltaRoll) / 2
-        let deltaQy = ( quat.z * deltaPitch + quat.w * deltaYaw - quat.x * deltaRoll) / 2
-        let deltaQz = (-quat.y * deltaPitch + quat.x * deltaYaw + quat.w * deltaRoll) / 2
-        
-        // integrate quaternion rates
-        let qw = quat.w + deltaQw
-        let qx = quat.x + deltaQx
-        let qy = quat.y + deltaQy
-        let qz = quat.z + deltaQz
-        
-        // normalize quaternions to prevent error growth
-        let rotatedQuat = simd_normalize(simd_quatf(ix: qx, iy: qy, iz: qz, r: qw))
-        
-        return rotatedQuat
     }
 }
