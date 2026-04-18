@@ -11,6 +11,16 @@
 import UIKit
 import RealityKit
 
+extension simd_float4x4 {
+    var eulerAngles: simd_float3 {
+        simd_float3(
+            x: asin(-self[2][1]),
+            y: atan2(self[2][0], self[2][2]),
+            z: atan2(self[0][1], self[1][1])
+        )
+    }
+}
+
 class ARViewCameraControl: ARView {
     
     let worldAnchor = AnchorEntity()
@@ -23,9 +33,7 @@ class ARViewCameraControl: ARView {
         cameraMode = .nonAR  // don't use iPhone camera
         debugOptions = [.showWorldOrigin, .showPhysics]  // show axes - requires entity.generateCollisionShapes(recursive:)
 
-        let transform = Transform(pitch: -0.32 * .pi, yaw: 0, roll: 0)
-        camera.setTransformMatrix(transform.matrix, relativeTo: camera)  // incremental rotation
-        camera.position = convertVectorFromLocalToWorld(vector: cameraOffset, camera.orientation)
+        camera.position = cameraOffset
         worldAnchor.addChild(camera)
         scene.addAnchor(worldAnchor)
 
@@ -41,6 +49,13 @@ class ARViewCameraControl: ARView {
     
     @MainActor @preconcurrency required dynamic init(frame frameRect: CGRect) {
         fatalError("init(frame:) has not been implemented")
+    }
+    
+    // allow programmatic rotation
+    func raiseCameraUp(degrees: Float) {
+        let transform = Transform(pitch: -degrees * .pi / 180, yaw: 0, roll: 0)
+        camera.setTransformMatrix(transform.matrix, relativeTo: camera)  // incremental rotation
+        camera.position = convertVectorFromLocalToWorld(vector: cameraOffset, camera.orientation)
     }
     
     @objc func handlePan(recognizer: UIPanGestureRecognizer) {
