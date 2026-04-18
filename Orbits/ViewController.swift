@@ -144,13 +144,18 @@ class ViewController: UIViewController {
         addSpotLight(orientation: simd_quatf(angle: 0, axis: [0, 1, 0]))
         addSpotLight(orientation: simd_quatf(angle: 2/3 * .pi, axis: [0, 1, 0]))
         addSpotLight(orientation: simd_quatf(angle: -2/3 * .pi, axis: [0, 1, 0]))
+        
+        // lighten whole scene a little
+        let directionalLight = DirectionalLight()
+        directionalLight.light.intensity = 1000
+        arViewCC.camera.addChild(directionalLight)
     }
     
     private func addSpotLight(orientation: simd_quatf) {
         let spotlight = SpotLight()
         spotlight.position = [0, 0, 0]
         spotlight.orientation = orientation
-        spotlight.light.intensity = 2000000
+        spotlight.light.intensity = 3000000
         spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()

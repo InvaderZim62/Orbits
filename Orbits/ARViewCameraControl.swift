@@ -25,7 +25,7 @@ class ARViewCameraControl: ARView {
     
     let worldAnchor = AnchorEntity()
     let camera = PerspectiveCamera()
-    var cameraOffset = simd_float3(0, 0, 24)  // camera position in camera coordinates
+    var cameraOffset = simd_float3(0, 0, 20)  // camera position in camera coordinates
 
     @MainActor @preconcurrency required dynamic init?(coder decoder: NSCoder) {  // called from Storyboard
         super.init(coder: decoder)
