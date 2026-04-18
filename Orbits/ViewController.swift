@@ -15,10 +15,9 @@ struct Constant {
     static let sunToEarthDistance: Float = 3.4
 //    static let earthToMoonDistance: Float = 0.00256 * sunToEarthDistance
     static let earthToMoonDistance: Float = 1
-//    static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt
-    static let earthObliquity: Float = 30 * .pi / 180  // exaggerated
-//    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
-    static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
+    static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt
+    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
+//    static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
     static let showMoonPath = false
 }
 
@@ -35,7 +34,7 @@ class ViewController: UIViewController {
     var earthContainer = ModelEntity()  // moves with earth, but stays level (earth's north pole is tiled in container)
     var moonContainer = ModelEntity()  // moves with earth, but tilted by the lunar inclination
 
-    @IBOutlet var arViewCC: ARViewCameraControl!  // subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
+    @IBOutlet var arViewCC: ARViewCameraControl!  // my subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -141,28 +140,22 @@ class ViewController: UIViewController {
     
     private func setupSunlight() {
         // SpotLight allows you to set position (point of origin) and orientation;
-        // it uses a cone of at most 180 degrees; I can't get shadows to work
-        let sunlightRight = SpotLight()
-        sunlightRight.position = [0, 0, 0]
-        sunlightRight.orientation = simd_quatf(angle: -.pi / 2, axis: [0, 1, 0])
-        sunlightRight.light.intensity = 2000000
-        sunlightRight.light.innerAngleInDegrees = 180  // +/- 90 degrees from orientation (180 deg is max)
-        sunlightRight.light.outerAngleInDegrees = 180
-        sunlightRight.light.attenuationRadius = 4
-        sunlightRight.shadow = SpotLightComponent.Shadow()
-        sunlightRight.shadow?.depthBias = 0.5
-        worldAnchor.addChild(sunlightRight)
-        
-        let sunlightLeft = SpotLight()
-        sunlightLeft.position = [0, 0, 0]
-        sunlightLeft.orientation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0])
-        sunlightLeft.light.intensity = 2000000
-        sunlightLeft.light.innerAngleInDegrees = 180  // +/- 90 degrees from orientation (180 deg is max)
-        sunlightLeft.light.outerAngleInDegrees = 180
-        sunlightLeft.light.attenuationRadius = 4
-        sunlightLeft.shadow = SpotLightComponent.Shadow()
-        sunlightLeft.shadow?.depthBias = 0.5
-        worldAnchor.addChild(sunlightLeft)
+        // to get complete coverage, use 3 spotlights (every 120 deg) with 140 deg spread (good overlap)
+        addSpotLight(orientation: simd_quatf(angle: 0, axis: [0, 1, 0]))
+        addSpotLight(orientation: simd_quatf(angle: 2/3 * .pi, axis: [0, 1, 0]))
+        addSpotLight(orientation: simd_quatf(angle: -2/3 * .pi, axis: [0, 1, 0]))
+    }
+    
+    private func addSpotLight(orientation: simd_quatf) {
+        let spotlight = SpotLight()
+        spotlight.position = [0, 0, 0]
+        spotlight.orientation = orientation
+        spotlight.light.intensity = 2000000
+        spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
+        spotlight.light.attenuationRadius = 6
+        spotlight.shadow = SpotLightComponent.Shadow()
+        spotlight.shadow?.depthBias = 0.5
+        worldAnchor.addChild(spotlight)
     }
     
     private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
