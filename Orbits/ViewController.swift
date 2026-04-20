@@ -15,6 +15,7 @@ struct Constant {
     static let sunToEarthDistance: Float = 3.4
 //    static let earthToMoonDistance: Float = 0.00256 * sunToEarthDistance
     static let earthToMoonDistance: Float = 1
+    static let earthRotationFactor: Float = 4  // times moon orbit rate (s/b 27.3)
     static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt
     static let lunarOrbitInclination: Float = 5.14 * .pi / 180
 //    static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
@@ -48,10 +49,13 @@ class ViewController: UIViewController {
         let sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
         worldAnchor.addChild(sun)
         
-//        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
         earth = try! Entity.loadModel(named: "earth")  // load Blender model
-        let material = SimpleMaterial(color: .blue, roughness: 1, isMetallic: false)  // roughness makes it more of a matte finish
+        
+        let texture = try! TextureResource.load(named: "earth")  // load .png image
+        var material = UnlitMaterial()
+        material.color = UnlitMaterial.BaseColor(texture: .init(texture))
         earth.model?.materials = [material]
+        
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
@@ -93,7 +97,7 @@ class ViewController: UIViewController {
         moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
 
         // spin earth around north pole
-        let transform = Transform(pitch: 0, yaw: 4 * deltaMoonAngle, roll: 0)  // it's really 27.3 x
+        let transform = Transform(pitch: 0, yaw: Constant.earthRotationFactor * deltaMoonAngle, roll: 0)
         earth.setTransformMatrix(transform.matrix, relativeTo: earth)  // incremental rotation
         
         if Constant.showMoonPath {
