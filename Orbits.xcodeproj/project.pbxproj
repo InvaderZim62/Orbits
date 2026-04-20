@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4A2E45372F96AD6E00F5D70D /* earth.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A2E45362F96AD6E00F5D70D /* earth.png */; };
-		4A2E45392F96B08A00F5D70D /* earth.usdc in Resources */ = {isa = PBXBuildFile; fileRef = 4A2E45382F96B08A00F5D70D /* earth.usdc */; };
+		4A2E453B2F96EDA100F5D70D /* earth.usdc in Resources */ = {isa = PBXBuildFile; fileRef = 4A2E453A2F96EDA100F5D70D /* earth.usdc */; };
 		4AD9E3F82F8DD32500667310 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3EF2F8DD32500667310 /* Assets.xcassets */; };
 		4AD9E3F92F8DD32500667310 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F02F8DD32500667310 /* LaunchScreen.storyboard */; };
 		4AD9E3FB2F8DD32500667310 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F52F8DD32500667310 /* Main.storyboard */; };
@@ -20,7 +20,7 @@
 
 /* Begin PBXFileReference section */
 		4A2E45362F96AD6E00F5D70D /* earth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = earth.png; sourceTree = "<group>"; };
-		4A2E45382F96B08A00F5D70D /* earth.usdc */ = {isa = PBXFileReference; lastKnownFileType = file; path = earth.usdc; sourceTree = "<group>"; };
+		4A2E453A2F96EDA100F5D70D /* earth.usdc */ = {isa = PBXFileReference; lastKnownFileType = file; path = earth.usdc; sourceTree = "<group>"; };
 		4AD9E3D62F8DD30E00667310 /* Orbits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Orbits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AD9E3EE2F8DD32500667310 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4AD9E3EF2F8DD32500667310 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -46,7 +46,7 @@
 		4A2E45222F95EAE900F5D70D /* Blender */ = {
 			isa = PBXGroup;
 			children = (
-				4A2E45382F96B08A00F5D70D /* earth.usdc */,
+				4A2E453A2F96EDA100F5D70D /* earth.usdc */,
 				4A2E45362F96AD6E00F5D70D /* earth.png */,
 			);
 			path = Blender;
@@ -156,7 +156,7 @@
 				4AD9E3F82F8DD32500667310 /* Assets.xcassets in Resources */,
 				4A2E45372F96AD6E00F5D70D /* earth.png in Resources */,
 				4AD9E3F92F8DD32500667310 /* LaunchScreen.storyboard in Resources */,
-				4A2E45392F96B08A00F5D70D /* earth.usdc in Resources */,
+				4A2E453B2F96EDA100F5D70D /* earth.usdc in Resources */,
 				4AD9E3FB2F8DD32500667310 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

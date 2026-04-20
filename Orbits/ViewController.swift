@@ -117,8 +117,8 @@ class ViewController: UIViewController {
     }
     
     private func drawEarthPath() {
-        for index in 0..<361 {
-            let angle = Float(index) * .pi / 180
+        for index in 0..<121 {  // every 3 degrees
+            let angle = Float(3 * index) * .pi / 180
             let x = cos(angle) * Constant.sunToEarthDistance
             let z = sin(angle) * Constant.sunToEarthDistance
             let position = simd_float3(x, 0, z)
@@ -135,8 +135,8 @@ class ViewController: UIViewController {
         let distance = length(end - start)
         let lineWidth: Float = 0.05
         
-        let lineMesh = MeshResource.generateBox(width: lineWidth, height: lineWidth, depth: distance, cornerRadius: lineWidth / 2)
-        let material = SimpleMaterial(color: .black, isMetallic: false)
+        let lineMesh = MeshResource.generateBox(width: lineWidth, height: lineWidth, depth: distance, cornerRadius: 0)
+        let material = UnlitMaterial(color: .gray)  // don't interact with light/shadows
         let lineEntity = ModelEntity(mesh: lineMesh, materials: [material])
         
         lineEntity.orientation = simd_quatf(from: simd_float3(0, 0, 1), to: direction)
