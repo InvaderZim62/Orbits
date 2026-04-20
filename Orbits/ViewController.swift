@@ -15,7 +15,7 @@ struct Constant {
     static let sunToEarthDistance: Float = 3.4
 //    static let earthToMoonDistance: Float = 0.00256 * sunToEarthDistance
     static let earthToMoonDistance: Float = 1
-    static let earthRotationFactor: Float = 4  // times moon orbit rate (s/b 27.3)
+    static let earthRotationFactor: Float = 3  // times moon orbit rate (s/b 27.3)
     static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt
     static let lunarOrbitInclination: Float = 5.14 * .pi / 180
 //    static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
@@ -52,8 +52,8 @@ class ViewController: UIViewController {
         earth = try! Entity.loadModel(named: "earth")  // load Blender model
         
         let texture = try! TextureResource.load(named: "earth")  // load .png image
-        var material = UnlitMaterial()
-        material.color = UnlitMaterial.BaseColor(texture: .init(texture))
+        var material = SimpleMaterial()
+        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
         earth.model?.materials = [material]
         
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
