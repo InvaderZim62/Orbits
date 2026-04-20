@@ -23,8 +23,8 @@ struct Constant {
 
 class ViewController: UIViewController {
     
-    var earth: Entity!
-    var moon: Entity!
+    var earth: ModelEntity!
+    var moon: ModelEntity!
     var pastPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
     var earthOrbitAngle: Float = 0  // orbital angle around the sun
@@ -48,7 +48,10 @@ class ViewController: UIViewController {
         let sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
         worldAnchor.addChild(sun)
         
-        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
+//        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
+        earth = try! Entity.loadModel(named: "earth")  // load Blender model
+        let material = SimpleMaterial(color: .blue, roughness: 1, isMetallic: false)  // roughness makes it more of a matte finish
+        earth.model?.materials = [material]
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
@@ -162,7 +165,7 @@ class ViewController: UIViewController {
         spotlight.shadow?.depthBias = 0.5
         worldAnchor.addChild(spotlight)
     }
-    
+
     private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
         let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
         if let color {
