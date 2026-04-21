@@ -16,7 +16,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <arView multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="l7F-Iq-OmM" customClass="ARViewCameraControl" customModule="Orbits" customModuleProvider="target">
+                            <arView multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="l7F-Iq-OmM">
                                 <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                             </arView>
                         </subviews>
@@ -30,7 +30,7 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="arViewCC" destination="l7F-Iq-OmM" id="Osv-BX-dq8"/>
+                        <outlet property="arView" destination="l7F-Iq-OmM" id="Osv-BX-dq8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

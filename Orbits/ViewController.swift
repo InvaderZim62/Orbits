@@ -24,6 +24,7 @@ struct Constant {
 
 class ViewController: UIViewController {
     
+    var sun: ModelEntity!
     var earth: ModelEntity!
     var moon: ModelEntity!
     var pastPosition = simd_float3.zero  // relative to sunAnchor
@@ -35,18 +36,31 @@ class ViewController: UIViewController {
     var earthContainer = ModelEntity()  // moves with earth, but stays level (earth's north pole is tiled in container)
     var moonContainer = ModelEntity()  // moves with earth, but tilted by the lunar inclination
 
-    @IBOutlet var arViewCC: ARViewCameraControl!  // my subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
+    @IBOutlet var arView: ARView!  // my subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        arView.addGestureRecognizer(tap)
+    }
+    
+    // add new sphere in front of camera (fixed in space)
+    // note: models can't be added in viewDidLoad or viewWillAppear
+    @objc private func handleTap(recognizer: UITapGestureRecognizer) {
+        worldAnchor.transform = arView.cameraTransform
+        arView.scene.addAnchor(worldAnchor)
+        createSolarSystem()
+    }
+
+    private func createSolarSystem() {
 //        arViewCC.environment.background = .color(.lightGray)
-        worldAnchor = arViewCC.worldAnchor
+//        worldAnchor = arViewCC.worldAnchor
+//        
+//        arViewCC.raiseCameraUp(degrees: 30)  // start off looking slightly down at scene
         
-        arViewCC.raiseCameraUp(degrees: 30)  // start off looking slightly down at scene
-        setupSunlight()
-        
-        let sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
+        sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
+//        sun.position.z = -1
         worldAnchor.addChild(sun)
         
         earth = try! Entity.loadModel(named: "earth")  // load Blender model
@@ -58,7 +72,7 @@ class ViewController: UIViewController {
         
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
-        earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
+        earthContainer.position = sun.position + [Constant.sunToEarthDistance, 0, 0]
         worldAnchor.addChild(earthContainer)
         pastPosition = earthContainer.position
 
@@ -68,6 +82,8 @@ class ViewController: UIViewController {
         moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
         earthContainer.addChild(moonContainer)  // moonContainer centered on Earth, but tilted
         pastMoonPosition = moon.position
+
+        setupSunlight()
 
 //        let eclipticPlane = createEclipticPlane()  // plane around sun
 //        eclipticPlane.position = [0, 0, 0]
@@ -91,7 +107,7 @@ class ViewController: UIViewController {
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
         earthOrbitAngle += deltaEarthAngle
-        earthContainer.position = [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
+        earthContainer.position = sun.position + [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
 
         moonOrbitAngle += deltaMoonAngle
         moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
@@ -121,7 +137,7 @@ class ViewController: UIViewController {
             let angle = Float(3 * index) * .pi / 180
             let x = cos(angle) * Constant.sunToEarthDistance
             let z = sin(angle) * Constant.sunToEarthDistance
-            let position = simd_float3(x, 0, z)
+            let position = sun.position + simd_float3(x, 0, z)
             let lineSegment = createLine(from: pastPosition, to: position)
             worldAnchor.addChild(lineSegment)
             pastPosition = position
@@ -152,15 +168,15 @@ class ViewController: UIViewController {
         addSpotLight(orientation: simd_quatf(angle: 2/3 * .pi, axis: [0, 1, 0]))
         addSpotLight(orientation: simd_quatf(angle: -2/3 * .pi, axis: [0, 1, 0]))
         
-        // lighten whole scene a little
-        let directionalLight = DirectionalLight()
-        directionalLight.light.intensity = 1000
-        arViewCC.camera.addChild(directionalLight)
+//        // lighten whole scene a little
+//        let directionalLight = DirectionalLight()
+//        directionalLight.light.intensity = 1000
+//        arViewCC.camera.addChild(directionalLight)
     }
     
     private func addSpotLight(orientation: simd_quatf) {
         let spotlight = SpotLight()
-        spotlight.position = [0, 0, 0]
+        spotlight.position = sun.position
         spotlight.orientation = orientation
         spotlight.light.intensity = 3000000
         spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow

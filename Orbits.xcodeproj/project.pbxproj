@@ -199,6 +199,7 @@
 				DEVELOPMENT_TEAM = 65Z9KA7SHC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Orbits/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires use of the camera.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -232,6 +233,7 @@
 				DEVELOPMENT_TEAM = 65Z9KA7SHC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Orbits/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires use of the camera.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
