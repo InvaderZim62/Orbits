@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     var earth: ModelEntity!
     var moon: ModelEntity!
     var isSolarSystemCreated = false
-    var pastPosition = simd_float3.zero  // relative to sunAnchor
+    var pastEarthContainerPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
     var earthOrbitAngle: Float = 0  // orbital angle around the sun
     var moonOrbitAngle: Float = 0  // orbital angle around the earth
@@ -77,7 +77,7 @@ class ViewController: UIViewController {
         earthContainer.addChild(earth)
         earthContainer.position = sun.position + [Constant.sunToEarthDistance, 0, 0]
         worldAnchor.addChild(earthContainer)
-        pastPosition = earthContainer.position
+        pastEarthContainerPosition = earthContainer.position
 
         moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
         moon.position = moonPosition(orbitAngle: 0)  // in moonContainer
@@ -132,9 +132,9 @@ class ViewController: UIViewController {
             let x = cos(angle) * Constant.sunToEarthDistance
             let z = sin(angle) * Constant.sunToEarthDistance
             let position = sun.position + simd_float3(x, 0, z)
-            let lineSegment = createLine(from: pastPosition, to: position)
+            let lineSegment = createLine(from: pastEarthContainerPosition, to: position)
             worldAnchor.addChild(lineSegment)
-            pastPosition = position
+            pastEarthContainerPosition = position
         }
     }
     
