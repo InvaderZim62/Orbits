@@ -7,14 +7,15 @@
 
 import UIKit
 import RealityKit
+import ARKit  // needed for session(didUpdate:)
 
 struct Constant {
     static let scale: Float = 0.2
     static let sunRadius: Float = 0.8 * scale
-    static let earthRadius: Float = 0.5 * scale
-    static let moonRadius: Float = 0.2 * scale // (s/b 0.27 * earthRadius)
-    static let sunToEarthDistance: Float = 5 * scale  // (s/b 0.00256 * sunToEarthDistance)
-    static let earthToMoonDistance: Float = 1 * scale
+    static let earthRadius: Float = 0.45 * scale
+    static let moonRadius: Float = 0.3 * earthRadius
+    static let sunToEarthDistance: Float = 4.5 * scale  // (s/b 0.00256 * sunToEarthDistance)
+    static let earthToMoonDistance: Float = 2 * earthRadius
     static let earthRotationFactor: Float = 3  // x moon orbit rate (s/b 27.3)
     static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt (actual)
     static let lunarOrbitInclination: Float = 5.14 * .pi / 180  // (actual)
@@ -34,11 +35,14 @@ class ViewController: UIViewController {
     var worldAnchor = AnchorEntity()
     var earthContainer = ModelEntity()  // moves with earth, but stays level (earth's north pole is tiled in container)
     var moonContainer = ModelEntity()  // moves with earth, but tilted by the lunar inclination
+    let directionalLight = DirectionalLight()  // moves with camera, to add extra light to whole scene
 
-    @IBOutlet var arView: ARView!  // my subclass of ARView that includes SceneKit-like camera controls (for nonAR apps, only)
+    @IBOutlet var arView: ARView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        arView.session.delegate = self
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         arView.addGestureRecognizer(tap)
@@ -136,7 +140,7 @@ class ViewController: UIViewController {
         let midpoint = (start + end) / 2
         let direction = normalize(end - start)
         let distance = length(end - start)
-        let lineWidth: Float = 0.05 * Constant.scale
+        let lineWidth: Float = 0.03 * Constant.scale
         
         let lineMesh = MeshResource.generateBox(width: lineWidth, height: lineWidth, depth: distance, cornerRadius: 0)
         let material = UnlitMaterial(color: .gray)  // don't interact with light/shadows
@@ -154,18 +158,18 @@ class ViewController: UIViewController {
         addSpotLight(orientation: simd_quatf(angle: 0, axis: [0, 1, 0]))
         addSpotLight(orientation: simd_quatf(angle: 2/3 * .pi, axis: [0, 1, 0]))
         addSpotLight(orientation: simd_quatf(angle: -2/3 * .pi, axis: [0, 1, 0]))
-        
-//        // lighten whole scene a little
-//        let directionalLight = DirectionalLight()
-//        directionalLight.light.intensity = 1000
-//        arViewCC.camera.addChild(directionalLight)
+
+        // lighten whole scene a little
+        directionalLight.light.intensity = 2000
+        directionalLight.transform = arView.cameraTransform  // update in session(didUpdate:), below
+        worldAnchor.addChild(directionalLight)
     }
     
     private func addSpotLight(orientation: simd_quatf) {
         let spotlight = SpotLight()
         spotlight.position = sun.position
         spotlight.orientation = orientation
-        spotlight.light.intensity = 3000000 * Constant.scale
+        spotlight.light.intensity = 1000000 * Constant.scale
         spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()
@@ -197,5 +201,12 @@ class ViewController: UIViewController {
         let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), roughness: 1, isMetallic: false)
         planeEntity.model?.materials = [material]
         return planeEntity
+    }
+}
+
+extension ViewController: ARSessionDelegate {  // requires arView.session.delegate = self
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        // keep light emanating from camera
+        directionalLight.transform = arView.cameraTransform
     }
 }
