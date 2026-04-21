@@ -9,16 +9,15 @@ import UIKit
 import RealityKit
 
 struct Constant {
-    static let sunRadius: Float = 0.9
-    static let earthRadius: Float = 0.5
-    static let moonRadius: Float = 0.2 // 0.27 * earthRadius
-    static let sunToEarthDistance: Float = 3.4
-//    static let earthToMoonDistance: Float = 0.00256 * sunToEarthDistance
-    static let earthToMoonDistance: Float = 1
-    static let earthRotationFactor: Float = 3  // times moon orbit rate (s/b 27.3)
-    static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt
-    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
-//    static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
+    static let scale: Float = 0.2
+    static let sunRadius: Float = 0.8 * scale
+    static let earthRadius: Float = 0.5 * scale
+    static let moonRadius: Float = 0.2 * scale // (s/b 0.27 * earthRadius)
+    static let sunToEarthDistance: Float = 5 * scale  // (s/b 0.00256 * sunToEarthDistance)
+    static let earthToMoonDistance: Float = 1 * scale
+    static let earthRotationFactor: Float = 3  // x moon orbit rate (s/b 27.3)
+    static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt (actual)
+    static let lunarOrbitInclination: Float = 5.14 * .pi / 180  // (actual)
     static let showMoonPath = false
 }
 
@@ -54,21 +53,18 @@ class ViewController: UIViewController {
     }
 
     private func createSolarSystem() {
-//        arViewCC.environment.background = .color(.lightGray)
-//        worldAnchor = arViewCC.worldAnchor
-//        
-//        arViewCC.raiseCameraUp(degrees: 30)  // start off looking slightly down at scene
-        
         sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
-//        sun.position.z = -1
+        sun.position.z = -1.5
         worldAnchor.addChild(sun)
         
-        earth = try! Entity.loadModel(named: "earth")  // load Blender model
+        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
         
-        let texture = try! TextureResource.load(named: "earth")  // load .png image
-        var material = SimpleMaterial()
-        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
-        earth.model?.materials = [material]
+        // pws: can't figure out how to scale the blender model
+//        earth = try! Entity.loadModel(named: "earth")  // load Blender model
+//        let texture = try! TextureResource.load(named: "earth")  // load .png image
+//        var material = SimpleMaterial()
+//        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
+//        earth.model?.materials = [material]
         
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
@@ -84,15 +80,6 @@ class ViewController: UIViewController {
         pastMoonPosition = moon.position
 
         setupSunlight()
-
-//        let eclipticPlane = createEclipticPlane()  // plane around sun
-//        eclipticPlane.position = [0, 0, 0]
-//        worldAnchor.addChild(eclipticPlane)
-
-//        let lunarOrbitPlane = createLunarOrbitPlane()
-//        lunarOrbitPlane.position = [0, 0, 0]
-//        moonContainer.addChild(lunarOrbitPlane)
-
         drawEarthPath()
         
         Timer.scheduledTimer(timeInterval: 0.05,
@@ -119,7 +106,7 @@ class ViewController: UIViewController {
         if Constant.showMoonPath {
             // draw moon's path around Earth, on the fly
             if fmod(moonOrbitAngle, 0.3) > -deltaMoonAngle {  // ~1:5
-                let lineSegment = createLine(from: pastMoonPosition, to: moon.position)  // this creates circle around earth
+                let lineSegment = createLine(from: pastMoonPosition, to: moon.position)
                 lineSegment.position = moonContainer.convert(position: lineSegment.position, to: worldAnchor)
                 worldAnchor.addChild(lineSegment)
                 pastMoonPosition = moon.position
@@ -149,7 +136,7 @@ class ViewController: UIViewController {
         let midpoint = (start + end) / 2
         let direction = normalize(end - start)
         let distance = length(end - start)
-        let lineWidth: Float = 0.05
+        let lineWidth: Float = 0.05 * Constant.scale
         
         let lineMesh = MeshResource.generateBox(width: lineWidth, height: lineWidth, depth: distance, cornerRadius: 0)
         let material = UnlitMaterial(color: .gray)  // don't interact with light/shadows
@@ -178,7 +165,7 @@ class ViewController: UIViewController {
         let spotlight = SpotLight()
         spotlight.position = sun.position
         spotlight.orientation = orientation
-        spotlight.light.intensity = 3000000
+        spotlight.light.intensity = 3000000 * Constant.scale
         spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()
