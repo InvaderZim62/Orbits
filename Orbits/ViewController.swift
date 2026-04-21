@@ -27,6 +27,7 @@ class ViewController: UIViewController {
     var sun: ModelEntity!
     var earth: ModelEntity!
     var moon: ModelEntity!
+    var isSolarSystemCreated = false
     var pastPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
     var earthOrbitAngle: Float = 0  // orbital angle around the sun
@@ -52,8 +53,10 @@ class ViewController: UIViewController {
     // note: models can't be added in viewDidLoad or viewWillAppear
     @objc private func handleTap(recognizer: UITapGestureRecognizer) {
         worldAnchor.transform = arView.cameraTransform
+        guard !isSolarSystemCreated else { return }  // only add it once
         arView.scene.addAnchor(worldAnchor)
         createSolarSystem()
+        isSolarSystemCreated = true
     }
 
     private func createSolarSystem() {
