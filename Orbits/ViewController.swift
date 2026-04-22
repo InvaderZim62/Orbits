@@ -4,6 +4,8 @@
 //
 //  Created by Phil Stern on 4/13/26.
 //
+//  To do...
+//
 
 import UIKit
 import RealityKit
@@ -64,14 +66,14 @@ class ViewController: UIViewController {
         sun.position.z = -1.5
         worldAnchor.addChild(sun)
         
-        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
+//        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
         
-        // pws: can't figure out how to scale the blender model
-//        earth = try! Entity.loadModel(named: "earth")  // load Blender model
-//        let texture = try! TextureResource.load(named: "earth")  // load .png image
-//        var material = SimpleMaterial()
-//        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
-//        earth.model?.materials = [material]
+        earth = try! Entity.loadModel(named: "earth")  // load Blender model
+        earth.scale *= Constant.scale
+        let texture = try! TextureResource.load(named: "earth")  // load .png image
+        var material = SimpleMaterial()
+        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
+        earth.model?.materials = [material]
         
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
