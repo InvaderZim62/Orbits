@@ -68,8 +68,8 @@ class ViewController: UIViewController {
         
 //        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
         
-        earth = try! Entity.loadModel(named: "earth")  // load Blender model
-        earth.scale *= Constant.scale
+        earth = try! Entity.loadModel(named: "earth")  // load Blender model (sized to give Xcode radius = 0.45)
+        earth.scale *= Constant.earthRadius / 0.45
         let texture = try! TextureResource.load(named: "earth")  // load .png image
         var material = SimpleMaterial()
         material.color = SimpleMaterial.BaseColor(texture: .init(texture))
