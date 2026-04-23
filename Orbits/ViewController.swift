@@ -45,7 +45,17 @@ class ViewController: UIViewController {
         arViewCC.raiseCameraUp(degrees: 30)  // start off looking slightly down at scene
         setupSunlight()
     }
-    
+
+    // Solar System
+    // entity           parent           position w.r.t parent    orientation w.r.t parent
+    // --------------   --------------   ----------------------   ---------------------------------------------
+    // worldAnchor      n/a              camera position at tap   camera orientation at tap gesture
+    // sun              worldAnchor      z = -1.5                 same
+    // earthContainer   sun              orbits around center     same
+    // earth            earthContainer   center                   North pole tilted (spinning about North pole)
+    // moonContainer    earthContainer   center                   tilted by lunarOrbitInclination
+    // moon             moonContainer    orbits around center     same (doesn't currently spin)
+
     private func createSolarSystem() {
         sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
         worldAnchor.addChild(sun)
@@ -61,8 +71,8 @@ class ViewController: UIViewController {
         
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
-        earthContainer.position = sun.position + [Constant.sunToEarthDistance, 0, 0]
-        worldAnchor.addChild(earthContainer)
+        earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
+        sun.addChild(earthContainer)
         pastEarthContainerPosition = earthContainer.position
         
         moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
@@ -73,11 +83,9 @@ class ViewController: UIViewController {
         pastMoonPosition = moon.position
         
 //        let eclipticPlane = createEclipticPlane()  // plane around sun
-//        eclipticPlane.position = sun.position
-//        worldAnchor.addChild(eclipticPlane)
+//        sun.addChild(eclipticPlane)
 //
 //        let lunarOrbitPlane = createLunarOrbitPlane()
-//        lunarOrbitPlane.position = [0, 0, 0]
 //        moonContainer.addChild(lunarOrbitPlane)
         
         drawEarthPath()
@@ -94,7 +102,7 @@ class ViewController: UIViewController {
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
         earthOrbitAngle += deltaEarthAngle
-        earthContainer.position = sun.position + [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
+        earthContainer.position = [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
 
         moonOrbitAngle += deltaMoonAngle
         moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
@@ -108,7 +116,7 @@ class ViewController: UIViewController {
             if fmod(moonOrbitAngle, 0.3) > -deltaMoonAngle {  // ~1:5
                 let lineSegment = createLine(from: pastMoonPosition, to: moon.position)  // this creates circle around earth
                 lineSegment.position = moonContainer.convert(position: lineSegment.position, to: worldAnchor)
-                worldAnchor.addChild(lineSegment)
+                sun.addChild(lineSegment)
                 pastMoonPosition = moon.position
             }
         }
@@ -124,9 +132,9 @@ class ViewController: UIViewController {
             let angle = Float(3 * index) * .pi / 180
             let x = cos(angle) * Constant.sunToEarthDistance
             let z = sin(angle) * Constant.sunToEarthDistance
-            let position = sun.position + simd_float3(x, 0, z)
+            let position = simd_float3(x, 0, z)
             let lineSegment = createLine(from: pastEarthContainerPosition, to: position)
-            worldAnchor.addChild(lineSegment)
+            sun.addChild(lineSegment)
             pastEarthContainerPosition = position
         }
     }
