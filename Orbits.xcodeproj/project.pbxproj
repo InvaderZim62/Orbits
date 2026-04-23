@@ -15,7 +15,6 @@
 		4AD9E3FC2F8DD32500667310 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD9E3EE2F8DD32500667310 /* AppDelegate.swift */; };
 		4AD9E3FD2F8DD32500667310 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F12F8DD32500667310 /* SceneDelegate.swift */; };
 		4AD9E3FE2F8DD32500667310 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F62F8DD32500667310 /* ViewController.swift */; };
-		4AD9E4002F8DD3A200667310 /* ARViewCameraControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD9E3FF2F8DD3A200667310 /* ARViewCameraControl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,7 +28,6 @@
 		4AD9E3F32F8DD32500667310 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4AD9E3F42F8DD32500667310 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		4AD9E3F62F8DD32500667310 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		4AD9E3FF2F8DD3A200667310 /* ARViewCameraControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewCameraControl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,7 +82,6 @@
 			children = (
 				4AD9E3F52F8DD32500667310 /* Main.storyboard */,
 				4AD9E3F62F8DD32500667310 /* ViewController.swift */,
-				4AD9E3FF2F8DD3A200667310 /* ARViewCameraControl.swift */,
 				4A2E45222F95EAE900F5D70D /* Blender */,
 				4AD9E3F22F8DD32500667310 /* Supporting Files */,
 				4AD9E3F32F8DD32500667310 /* Info.plist */,
@@ -168,7 +165,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AD9E4002F8DD3A200667310 /* ARViewCameraControl.swift in Sources */,
 				4AD9E3FC2F8DD32500667310 /* AppDelegate.swift in Sources */,
 				4AD9E3FD2F8DD32500667310 /* SceneDelegate.swift in Sources */,
 				4AD9E3FE2F8DD32500667310 /* ViewController.swift in Sources */,
@@ -199,6 +195,7 @@
 				DEVELOPMENT_TEAM = 65Z9KA7SHC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Orbits/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Solar System";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires use of the camera.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -233,6 +230,7 @@
 				DEVELOPMENT_TEAM = 65Z9KA7SHC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Orbits/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Solar System";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires use of the camera.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
