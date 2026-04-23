@@ -126,8 +126,8 @@ class ViewController: UIViewController {
             // draw moon's path around Earth, on the fly
             if fmod(moonOrbitAngle, 0.3) > -deltaMoonAngle {  // ~1:5
                 let lineSegment = createLine(from: pastMoonPosition, to: moon.position)
-                lineSegment.position = moonContainer.convert(position: lineSegment.position, to: worldAnchor)
-                worldAnchor.addChild(lineSegment)
+                lineSegment.position = moonContainer.convert(position: lineSegment.position, to: sun)
+                sun.addChild(lineSegment)
                 pastMoonPosition = moon.position
             }
         }
@@ -182,14 +182,13 @@ class ViewController: UIViewController {
     
     private func addSpotLight(orientation: simd_quatf) {
         let spotlight = SpotLight()
-        spotlight.position = sun.position
         spotlight.orientation = orientation
         spotlight.light.intensity = 1000000 * Constant.scale
         spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
-        worldAnchor.addChild(spotlight)
+        sun.addChild(spotlight)
     }
 
     private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
