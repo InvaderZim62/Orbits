@@ -9,24 +9,23 @@ import UIKit
 import RealityKit
 
 struct Constant {
-    static let sunRadius: Float = 0.9
-    static let earthRadius: Float = 0.5
-    static let moonRadius: Float = 0.2 // 0.27 * earthRadius
-    static let sunToEarthDistance: Float = 3.4
-//    static let earthToMoonDistance: Float = 0.00256 * sunToEarthDistance
-    static let earthToMoonDistance: Float = 1
-    static let earthRotationFactor: Float = 3  // times moon orbit rate (s/b 27.3)
-    static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt
-    static let lunarOrbitInclination: Float = 5.14 * .pi / 180
-//    static let lunarOrbitInclination: Float = 20 * .pi / 180  // exaggerated
+    static let sunRadius: Float = 0.8
+    static let earthRadius: Float = 0.45
+    static let moonRadius: Float = 0.3 * earthRadius
+    static let sunToEarthDistance: Float = 4.5  // (s/b 0.00256 * sunToEarthDistance)
+    static let earthToMoonDistance: Float = 2 * earthRadius
+    static let earthRotationFactor: Float = 3  // x moon orbit rate (s/b 27.3)
+    static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt (actual)
+    static let lunarOrbitInclination: Float = 5.14 * .pi / 180  // (actual)
     static let showMoonPath = false
 }
 
 class ViewController: UIViewController {
     
+    var sun: ModelEntity!
     var earth: ModelEntity!
     var moon: ModelEntity!
-    var pastPosition = simd_float3.zero  // relative to sunAnchor
+    var pastEarthContainerPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
     var earthOrbitAngle: Float = 0  // orbital angle around the sun
     var moonOrbitAngle: Float = 0  // orbital angle around the earth
@@ -42,15 +41,19 @@ class ViewController: UIViewController {
         
 //        arViewCC.environment.background = .color(.lightGray)
         worldAnchor = arViewCC.worldAnchor
-        
+        createSolarSystem()
         arViewCC.raiseCameraUp(degrees: 30)  // start off looking slightly down at scene
         setupSunlight()
-        
-        let sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
+    }
+    
+    private func createSolarSystem() {
+        sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
         worldAnchor.addChild(sun)
         
-        earth = try! Entity.loadModel(named: "earth")  // load Blender model
+//        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
         
+        earth = try! Entity.loadModel(named: "earth")  // load Blender model (sized to give Xcode radius = 0.45)
+        earth.scale *= Constant.earthRadius / 0.45
         let texture = try! TextureResource.load(named: "earth")  // load .png image
         var material = SimpleMaterial()
         material.color = SimpleMaterial.BaseColor(texture: .init(texture))
@@ -58,25 +61,25 @@ class ViewController: UIViewController {
         
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
-        earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
+        earthContainer.position = sun.position + [Constant.sunToEarthDistance, 0, 0]
         worldAnchor.addChild(earthContainer)
-        pastPosition = earthContainer.position
-
+        pastEarthContainerPosition = earthContainer.position
+        
         moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
         moon.position = moonPosition(orbitAngle: 0)  // in moonContainer
         moonContainer.addChild(moon)
         moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
         earthContainer.addChild(moonContainer)  // moonContainer centered on Earth, but tilted
         pastMoonPosition = moon.position
-
+        
 //        let eclipticPlane = createEclipticPlane()  // plane around sun
-//        eclipticPlane.position = [0, 0, 0]
+//        eclipticPlane.position = sun.position
 //        worldAnchor.addChild(eclipticPlane)
-
+//
 //        let lunarOrbitPlane = createLunarOrbitPlane()
 //        lunarOrbitPlane.position = [0, 0, 0]
 //        moonContainer.addChild(lunarOrbitPlane)
-
+        
         drawEarthPath()
         
         Timer.scheduledTimer(timeInterval: 0.05,
@@ -91,7 +94,7 @@ class ViewController: UIViewController {
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
         earthOrbitAngle += deltaEarthAngle
-        earthContainer.position = [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
+        earthContainer.position = sun.position + [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
 
         moonOrbitAngle += deltaMoonAngle
         moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
@@ -121,10 +124,10 @@ class ViewController: UIViewController {
             let angle = Float(3 * index) * .pi / 180
             let x = cos(angle) * Constant.sunToEarthDistance
             let z = sin(angle) * Constant.sunToEarthDistance
-            let position = simd_float3(x, 0, z)
-            let lineSegment = createLine(from: pastPosition, to: position)
+            let position = sun.position + simd_float3(x, 0, z)
+            let lineSegment = createLine(from: pastEarthContainerPosition, to: position)
             worldAnchor.addChild(lineSegment)
-            pastPosition = position
+            pastEarthContainerPosition = position
         }
     }
     
@@ -133,8 +136,8 @@ class ViewController: UIViewController {
         let midpoint = (start + end) / 2
         let direction = normalize(end - start)
         let distance = length(end - start)
-        let lineWidth: Float = 0.05
-        
+        let lineWidth: Float = 0.03
+
         let lineMesh = MeshResource.generateBox(width: lineWidth, height: lineWidth, depth: distance, cornerRadius: 0)
         let material = UnlitMaterial(color: .gray)  // don't interact with light/shadows
         let lineEntity = ModelEntity(mesh: lineMesh, materials: [material])
@@ -160,7 +163,7 @@ class ViewController: UIViewController {
     
     private func addSpotLight(orientation: simd_quatf) {
         let spotlight = SpotLight()
-        spotlight.position = [0, 0, 0]
+        spotlight.position = sun.position
         spotlight.orientation = orientation
         spotlight.light.intensity = 3000000
         spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
