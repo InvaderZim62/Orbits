@@ -193,20 +193,6 @@ class ViewController: UIViewController {
         }
         return sphereEntity
     }
-    
-    private func createEclipticPlane() -> ModelEntity {
-        let planeEntity = ModelEntity(mesh: .generateBox(size: [10, 0, 10]))
-        let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), roughness: 1, isMetallic: false)
-        planeEntity.model?.materials = [material]
-        return planeEntity
-    }
-    
-    private func createLunarOrbitPlane() -> ModelEntity {
-        let planeEntity = ModelEntity(mesh: .generateBox(size: [3, 0, 3]))
-        let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), roughness: 1, isMetallic: false)
-        planeEntity.model?.materials = [material]
-        return planeEntity
-    }
 }
 
 extension ViewController: ARSessionDelegate {  // requires arView.session.delegate = self
