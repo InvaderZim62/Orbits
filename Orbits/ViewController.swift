@@ -49,7 +49,6 @@ class ViewController: UIViewController {
     // Solar System
     // entity           parent           position w.r.t parent    orientation w.r.t parent
     // --------------   --------------   ----------------------   ---------------------------------------------
-    // worldAnchor      n/a              camera position at tap   camera orientation at tap gesture
     // sun              worldAnchor      z = -1.5                 same
     // earthContainer   sun              orbits around center     same
     // earth            earthContainer   center                   North pole tilted (spinning about North pole)
