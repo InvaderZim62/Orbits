@@ -17,7 +17,7 @@ struct Constant {
     static let earthRotationFactor: Float = 3  // x moon orbit rate (s/b 27.3)
     static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt (actual)
     static let lunarOrbitInclination: Float = 5.14 * .pi / 180  // (actual)
-    static let showMoonPath = false
+    static let showMoonPath = true
 }
 
 class ViewController: UIViewController {
@@ -115,7 +115,7 @@ class ViewController: UIViewController {
             // draw moon's path around Earth, on the fly
             if fmod(moonOrbitAngle, 0.3) > -deltaMoonAngle {  // ~1:5
                 let lineSegment = createLine(from: pastMoonPosition, to: moon.position)  // this creates circle around earth
-                lineSegment.position = moonContainer.convert(position: lineSegment.position, to: worldAnchor)
+                lineSegment.position = moonContainer.convert(position: lineSegment.position, to: sun)
                 sun.addChild(lineSegment)
                 pastMoonPosition = moon.position
             }
@@ -178,7 +178,7 @@ class ViewController: UIViewController {
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
-        worldAnchor.addChild(spotlight)
+        sun.addChild(spotlight)
     }
 
     private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
