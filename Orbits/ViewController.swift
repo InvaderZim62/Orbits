@@ -135,18 +135,20 @@ class ViewController: UIViewController {
     private func drawEarthContainerPath() {
         for index in 0..<121 {  // every 3 degrees
             let angle = Float(3 * index) * .pi / 180
-            let position = orbitPosition(angle: angle, radius: Constant.sunToEarthDistance)
-            let lineSegment = createLine(from: pastEarthContainerPosition, to: position)
+            let earthContainerPosition = orbitPosition(angle: angle, radius: Constant.sunToEarthDistance)
+            let lineSegment = createLine(from: pastEarthContainerPosition, to: earthContainerPosition)
             sun.addChild(lineSegment)
-            pastEarthContainerPosition = position
+            pastEarthContainerPosition = earthContainerPosition
         }
     }
     
+    // 2D circular orbit
     private func orbitPosition(angle: Float, radius: Float) -> simd_float3 {
         simd_float3(cos(angle), 0, -sin(angle)) * radius
     }
 
     // create lines out of boxes
+    // based on: https://stackoverflow.com/a/78905408 (part 3.)
     private func createLine(from start: simd_float3, to end: simd_float3) -> ModelEntity {
         let midpoint = (start + end) / 2
         let direction = normalize(end - start)
@@ -162,7 +164,7 @@ class ViewController: UIViewController {
         
         return lineEntity
     }
-    
+
     private func setupSunlight() {
         // SpotLight allows you to set position (point of origin) and orientation;
         // to get complete coverage, use 3 spotlights (every 120 deg) with 140 deg spread (good overlap)
@@ -209,7 +211,7 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: ARSessionDelegate {  // requires arView.session.delegate = self
+extension ViewController: ARSessionDelegate {  // requires ARKit and arView.session.delegate = self
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // when turning camera, camera orientation = yaw angle (for example), causing light to point in that direction;
         // after tap sets worldAnchor to camera transform, both worldAnchor and camera orientation = yaw angle;
