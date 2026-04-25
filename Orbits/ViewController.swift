@@ -17,7 +17,7 @@ struct Constant {
     static let earthRotationFactor: Float = 3  // x moon orbit rate (s/b 27.3)
     static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt (actual)
     static let lunarOrbitInclination: Float = 5.14 * .pi / 180  // (actual)
-    static let showMoonPath = true
+    static let showMoonPath = false
 }
 
 class ViewController: UIViewController {
@@ -49,37 +49,34 @@ class ViewController: UIViewController {
     // Solar System
     // entity           parent           position w.r.t parent    orientation w.r.t parent
     // --------------   --------------   ----------------------   ---------------------------------------------
-    // camera           worldAnchor      z = 30                   same
-    // sun              worldAnchor      center                   same
-    // earthContainer   sun              orbits around center     same
-    // earth            earthContainer   center                   North pole tilted (spinning about North pole)
-    // moonContainer    earthContainer   center                   tilted by lunarOrbitInclination
-    // moon             moonContainer    orbits around center     same (doesn't currently spin)
+    // camera           worldAnchor      z = 30                   level
+    // sun              worldAnchor      center                   level
+    // earthContainer   sun              orbit around center      level
+    // earth            earthContainer   centered                 North pole tilted (spinning about North pole)
+    // moonContainer    earthContainer   centered                 tilted by lunarOrbitInclination
+    // moon             moonContainer    orbit around container   level (doesn't currently spin)
+    
+    // Note: containers are used to simplify orbital equations; objects are either centered or have simple 2D orbits in their containers
 
     private func createSolarSystem() {
         sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
-        worldAnchor.addChild(sun)
-        
-//        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
-        
-        earth = try! Entity.loadModel(named: "earth")  // load Blender model (sized to give Xcode radius = 0.45)
-        earth.scale *= Constant.earthRadius / 0.45
-        let texture = try! TextureResource.load(named: "earth")  // load .png image
-        var material = SimpleMaterial()
-        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
-        earth.model?.materials = [material]
-        
+        sun.setParent(worldAnchor)
+
+        earthContainer.position = [Constant.sunToEarthDistance, 0, 0]  // initial position (updated in updateOrbit)
+        earthContainer.setParent(sun)
+
+        earth = createSphereEntity(radius: Constant.earthRadius, textureName: "earthTexture")
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
-        earthContainer.addChild(earth)
-        earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
-        sun.addChild(earthContainer)
-        pastEarthContainerPosition = earthContainer.position
-        
-        moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
-        moon.position = moonPosition(orbitAngle: 0)  // in moonContainer
-        moonContainer.addChild(moon)
+        earth.setParent(earthContainer)
+
         moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
-        earthContainer.addChild(moonContainer)  // moonContainer centered on Earth, but tilted
+        moonContainer.setParent(earthContainer)
+
+        moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
+        moon.position = [Constant.earthToMoonDistance, 0, 0]  // initial position (updated in updateOrbit)
+        moon.setParent(moonContainer)
+        
+        pastEarthContainerPosition = earthContainer.position
         pastMoonPosition = moon.position
         
 //        let eclipticPlane = createEclipticPlane()  // plane around sun
@@ -88,24 +85,24 @@ class ViewController: UIViewController {
 //        let lunarOrbitPlane = createLunarOrbitPlane()
 //        moonContainer.addChild(lunarOrbitPlane)
         
-        drawEarthPath()
+        drawEarthContainerPath()
         
         Timer.scheduledTimer(timeInterval: 0.05,
                              target: self,
-                             selector: #selector(orbit),
+                             selector: #selector(updateOrbits),
                              userInfo: nil,
                              repeats: true)
     }
     
-    @objc func orbit() {
+    @objc func updateOrbits() {
         let deltaEarthAngle: Float = 0.004
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
         earthOrbitAngle += deltaEarthAngle
-        earthContainer.position = [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
+        earthContainer.position = orbitPosition(angle: earthOrbitAngle, radius: Constant.sunToEarthDistance)  // position relative to sun
 
         moonOrbitAngle += deltaMoonAngle
-        moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
+        moon.position = orbitPosition(angle: moonOrbitAngle, radius: Constant.earthToMoonDistance)  // position relative to moonContainer
 
         // spin earth around north pole
         let transform = Transform(pitch: 0, yaw: Constant.earthRotationFactor * deltaMoonAngle, roll: 0)
@@ -122,24 +119,23 @@ class ViewController: UIViewController {
         }
     }
     
-    // moon position within moon container
-    private func moonPosition(orbitAngle: Float) -> simd_float3 {
-        simd_float3(cos(orbitAngle), 0, -sin(orbitAngle)) * Constant.earthToMoonDistance
-    }
-    
-    private func drawEarthPath() {
+    private func drawEarthContainerPath() {
         for index in 0..<121 {  // every 3 degrees
             let angle = Float(3 * index) * .pi / 180
-            let x = cos(angle) * Constant.sunToEarthDistance
-            let z = sin(angle) * Constant.sunToEarthDistance
-            let position = simd_float3(x, 0, z)
-            let lineSegment = createLine(from: pastEarthContainerPosition, to: position)
+            let earthContainerPosition = orbitPosition(angle: angle, radius: Constant.sunToEarthDistance)
+            let lineSegment = createLine(from: pastEarthContainerPosition, to: earthContainerPosition)
             sun.addChild(lineSegment)
-            pastEarthContainerPosition = position
+            pastEarthContainerPosition = earthContainerPosition
         }
     }
-    
+
+    // 2D circular orbit
+    private func orbitPosition(angle: Float, radius: Float) -> simd_float3 {
+        simd_float3(cos(angle), 0, -sin(angle)) * radius
+    }
+
     // create lines out of boxes
+    // based on: https://stackoverflow.com/a/78905408 (part 3.)
     private func createLine(from start: simd_float3, to end: simd_float3) -> ModelEntity {
         let midpoint = (start + end) / 2
         let direction = normalize(end - start)
@@ -179,6 +175,15 @@ class ViewController: UIViewController {
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
         sun.addChild(spotlight)
+    }
+    
+    private func createSphereEntity(radius: Float, textureName: String) -> ModelEntity {
+        let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
+        let texture = try! TextureResource.load(named: textureName)  // load .png image
+        var material = SimpleMaterial()
+        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
+        sphereEntity.model?.materials = [material]
+        return sphereEntity
     }
 
     private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
