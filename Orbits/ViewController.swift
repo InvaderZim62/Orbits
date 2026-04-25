@@ -54,7 +54,6 @@ class ViewController: UIViewController {
     // add new sphere in front of camera (fixed in space)
     // note: models can't be added in viewDidLoad or viewWillAppear
     @objc private func handleTap(recognizer: UITapGestureRecognizer) {
-        print("\n========================== tap =============================\n")
         worldAnchor.transform = arView.cameraTransform  // re-position worldAnchor after every tap
         
         guard !isSolarSystemCreated else { return }  // only create solar system once
@@ -208,7 +207,6 @@ class ViewController: UIViewController {
 
 extension ViewController: ARSessionDelegate {  // requires arView.session.delegate = self
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        
         // when turning camera, camera orientation = yaw angle (for example), causing light to point in that direction;
         // after tap sets worldAnchor to camera transform, both worldAnchor and camera orientation = yaw angle;
         // if setting light orientation to camera, light strikes scene from yaw angle, rather then from camera;
@@ -217,33 +215,6 @@ extension ViewController: ARSessionDelegate {  // requires arView.session.delega
         // keep light pointing in camera direction
         let zeroOrientationEntity = Entity()
         directionalLight.transform = zeroOrientationEntity.convert(transform: arView.cameraTransform, to: worldAnchor)
-
-        print(String(format: "Anchor Position: % .2f, % .2f, % .2f,   pitch: % .1f, yaw: % .1f, roll: % .1f", worldAnchor.position.x, worldAnchor.position.y, worldAnchor.position.z, worldAnchor.transform.matrix.eulerAngles.x, worldAnchor.transform.matrix.eulerAngles.y, worldAnchor.transform.matrix.eulerAngles.z), terminator: "   ")
-        
-        print(String(format: "Light Position: % .2f, % .2f, % .2f,   pitch: % .1f, yaw: % .1f, roll: % .1f", directionalLight.position.x, directionalLight.position.y, directionalLight.position.z, directionalLight.transform.matrix.eulerAngles.x, directionalLight.transform.matrix.eulerAngles.y, directionalLight.transform.matrix.eulerAngles.z))
-        
-        print(String(format: "Temp Position: % .2f, % .2f, % .2f,   pitch: % .1f, yaw: % .1f, roll: % .1f", zeroOrientationEntity.position.x, zeroOrientationEntity.position.y, zeroOrientationEntity.position.z, zeroOrientationEntity.transform.matrix.eulerAngles.x, zeroOrientationEntity.transform.matrix.eulerAngles.y, zeroOrientationEntity.transform.matrix.eulerAngles.z))
-    }
-}
-
-func printVector(_ vector: simd_float3, title: String) {
-    print(String(format: "\(title): %.2f, %.2f, %.2f", vector.x, vector.y, vector.z))
-}
-
-extension simd_float4x4 {
-    var eulerAngles: simd_float3 {
-        simd_float3(
-            x: asin(-self[2][1]) * 180 / .pi,
-            y: atan2(self[2][0], self[2][2]) * 180 / .pi,
-            z: atan2(self[0][1], self[1][1] * 180 / .pi)
-        )
-    }
-    var position: simd_float3 {
-        simd_float3(
-            x: self[3][0],
-            y: self[3][1],
-            z: self[3][2]
-        )
     }
 }
 
