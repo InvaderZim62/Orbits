@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4A2E453D2F98583500F5D70D /* earth.usdc in Resources */ = {isa = PBXBuildFile; fileRef = 4A2E453C2F98583500F5D70D /* earth.usdc */; };
-		4A2E453F2F98584000F5D70D /* earth.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A2E453E2F98584000F5D70D /* earth.png */; };
+		4A2E453F2F98584000F5D70D /* earthTexture.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A2E453E2F98584000F5D70D /* earthTexture.png */; };
 		4AD9E3F82F8DD32500667310 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3EF2F8DD32500667310 /* Assets.xcassets */; };
 		4AD9E3F92F8DD32500667310 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F02F8DD32500667310 /* LaunchScreen.storyboard */; };
 		4AD9E3FB2F8DD32500667310 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F52F8DD32500667310 /* Main.storyboard */; };
@@ -18,8 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4A2E453C2F98583500F5D70D /* earth.usdc */ = {isa = PBXFileReference; lastKnownFileType = file; path = earth.usdc; sourceTree = "<group>"; };
-		4A2E453E2F98584000F5D70D /* earth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = earth.png; sourceTree = "<group>"; };
+		4A2E453E2F98584000F5D70D /* earthTexture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = earthTexture.png; sourceTree = "<group>"; };
 		4AD9E3D62F8DD30E00667310 /* Orbits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Orbits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AD9E3EE2F8DD32500667310 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4AD9E3EF2F8DD32500667310 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -41,15 +39,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4A2E45222F95EAE900F5D70D /* Blender */ = {
-			isa = PBXGroup;
-			children = (
-				4A2E453C2F98583500F5D70D /* earth.usdc */,
-				4A2E453E2F98584000F5D70D /* earth.png */,
-			);
-			path = Blender;
-			sourceTree = "<group>";
-		};
 		4AD9E3CD2F8DD30E00667310 = {
 			isa = PBXGroup;
 			children = (
@@ -82,7 +71,7 @@
 			children = (
 				4AD9E3F52F8DD32500667310 /* Main.storyboard */,
 				4AD9E3F62F8DD32500667310 /* ViewController.swift */,
-				4A2E45222F95EAE900F5D70D /* Blender */,
+				4A2E453E2F98584000F5D70D /* earthTexture.png */,
 				4AD9E3F22F8DD32500667310 /* Supporting Files */,
 				4AD9E3F32F8DD32500667310 /* Info.plist */,
 			);
@@ -151,10 +140,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AD9E3F82F8DD32500667310 /* Assets.xcassets in Resources */,
-				4A2E453F2F98584000F5D70D /* earth.png in Resources */,
+				4A2E453F2F98584000F5D70D /* earthTexture.png in Resources */,
 				4AD9E3F92F8DD32500667310 /* LaunchScreen.storyboard in Resources */,
 				4AD9E3FB2F8DD32500667310 /* Main.storyboard in Resources */,
-				4A2E453D2F98583500F5D70D /* earth.usdc in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -77,15 +77,7 @@ class ViewController: UIViewController {
         sun.position.z = -1.5
         worldAnchor.addChild(sun)
         
-//        earth = createSphereEntity(radius: Constant.earthRadius, color: .blue)
-        
-        earth = try! Entity.loadModel(named: "earth")  // load Blender model (sized to give Xcode radius = 0.45)
-        earth.scale *= Constant.earthRadius / 0.45
-        let texture = try! TextureResource.load(named: "earth")  // load .png image
-        var material = SimpleMaterial()
-        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
-        earth.model?.materials = [material]
-        
+        earth = createEarthEntity(radius: Constant.earthRadius)
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
@@ -190,6 +182,15 @@ class ViewController: UIViewController {
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
         sun.addChild(spotlight)
+    }
+    
+    private func createEarthEntity(radius: Float) -> ModelEntity {
+        let earthEntity = ModelEntity(mesh: .generateSphere(radius: radius))
+        let texture = try! TextureResource.load(named: "earthTexture")  // load .png image
+        var material = SimpleMaterial()
+        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
+        earthEntity.model?.materials = [material]
+        return earthEntity
     }
 
     private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
