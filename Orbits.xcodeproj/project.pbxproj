@@ -41,14 +41,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4A2E45222F95EAE900F5D70D /* Blender */ = {
-			isa = PBXGroup;
-			children = (
-				4A2E45422F99A7E200F5D70D /* earthTexture.png */,
-			);
-			path = Blender;
-			sourceTree = "<group>";
-		};
 		4AD9E3CD2F8DD30E00667310 = {
 			isa = PBXGroup;
 			children = (
@@ -82,7 +74,7 @@
 				4AD9E3F52F8DD32500667310 /* Main.storyboard */,
 				4AD9E3F62F8DD32500667310 /* ViewController.swift */,
 				4AD9E3FF2F8DD3A200667310 /* ARViewCameraControl.swift */,
-				4A2E45222F95EAE900F5D70D /* Blender */,
+				4A2E45422F99A7E200F5D70D /* earthTexture.png */,
 				4AD9E3F22F8DD32500667310 /* Supporting Files */,
 				4AD9E3F32F8DD32500667310 /* Info.plist */,
 			);
