@@ -1,7 +1,7 @@
 # Orbits
 
-Main branch is non-AR version.
-<br>AR branch is AR version.
+I created this app of a mini-solar system using RealityKit.  It has a Sun, Earth, and Moon (not to scale).  The main GitHub
+branch has a non-AR version (including SceneKit-like camera controls).  The "AR" branch has an augmented reality version.
 
 | Non-AR | AR |
 | ------ | --- |
