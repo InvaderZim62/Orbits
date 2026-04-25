@@ -51,7 +51,7 @@ class ViewController: UIViewController {
         arView.addGestureRecognizer(tap)
     }
     
-    // add new sphere in front of camera (fixed in space)
+    // move solar system in front of camera
     // note: models can't be added in viewDidLoad or viewWillAppear
     @objc private func handleTap(recognizer: UITapGestureRecognizer) {
         worldAnchor.transform = arView.cameraTransform  // re-position worldAnchor after every tap
@@ -66,50 +66,50 @@ class ViewController: UIViewController {
     // entity           parent           position w.r.t parent    orientation w.r.t parent
     // --------------   --------------   ----------------------   ---------------------------------------------
     // worldAnchor      n/a              camera position at tap   camera orientation at tap gesture
-    // sun              worldAnchor      z = -1.5                 same
-    // earthContainer   sun              orbits around center     same
-    // earth            earthContainer   center                   North pole tilted (spinning about North pole)
-    // moonContainer    earthContainer   center                   tilted by lunarOrbitInclination
-    // moon             moonContainer    orbits around center     same (doesn't currently spin)
+    // sun              worldAnchor      z = -1.5                 level
+    // earthContainer   sun              orbit around sun         level
+    // earth            earthContainer   centered                 North pole tilted (spinning about North pole)
+    // moonContainer    earthContainer   centered                 tilted by lunarOrbitInclination
+    // moon             moonContainer    orbit around container   level (doesn't currently spin)
     
     private func createSolarSystem() {
         sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
         sun.position.z = -1.5
         worldAnchor.addChild(sun)
-        
-        earth = createEarthEntity(radius: Constant.earthRadius)
+        sun.addChild(earthContainer)
+
+        earth = createSphereEntity(radius: Constant.earthRadius, textureName: "earthTexture")
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earthContainer.addChild(earth)
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]
-        sun.addChild(earthContainer)
         pastEarthContainerPosition = earthContainer.position
 
         moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
-        moon.position = moonPosition(orbitAngle: 0)  // in moonContainer
         moonContainer.addChild(moon)
         moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
         earthContainer.addChild(moonContainer)  // moonContainer centered on Earth, but tilted
         pastMoonPosition = moon.position
 
         setupSunlight()
-        drawEarthPath()
+        drawEarthContainerPath()
         
         Timer.scheduledTimer(timeInterval: 0.05,
                              target: self,
-                             selector: #selector(orbit),
+                             selector: #selector(updateOrbits),
                              userInfo: nil,
                              repeats: true)
     }
     
-    @objc func orbit() {
+    // move earthContainer around sun and moon around moonContainer
+    @objc func updateOrbits() {
         let deltaEarthAngle: Float = 0.004
         let deltaMoonAngle = 13.37 * deltaEarthAngle
 
         earthOrbitAngle += deltaEarthAngle
-        earthContainer.position = [cos(earthOrbitAngle), 0, -sin(earthOrbitAngle)] * Constant.sunToEarthDistance
+        earthContainer.position = orbitPosition(angle: earthOrbitAngle, radius: Constant.sunToEarthDistance)  // position relative to sun
 
         moonOrbitAngle += deltaMoonAngle
-        moon.position = moonPosition(orbitAngle: moonOrbitAngle)  // position relative to moonContainer
+        moon.position = orbitPosition(angle: moonOrbitAngle, radius: Constant.earthToMoonDistance)  // position relative to moonContainer
 
         // spin earth around north pole
         let transform = Transform(pitch: 0, yaw: Constant.earthRotationFactor * deltaMoonAngle, roll: 0)
@@ -126,23 +126,20 @@ class ViewController: UIViewController {
         }
     }
     
-    // moon position within moon container
-    private func moonPosition(orbitAngle: Float) -> simd_float3 {
-        simd_float3(cos(orbitAngle), 0, -sin(orbitAngle)) * Constant.earthToMoonDistance
-    }
-    
-    private func drawEarthPath() {
+    private func drawEarthContainerPath() {
         for index in 0..<121 {  // every 3 degrees
             let angle = Float(3 * index) * .pi / 180
-            let x = cos(angle) * Constant.sunToEarthDistance
-            let z = sin(angle) * Constant.sunToEarthDistance
-            let position = simd_float3(x, 0, z)
+            let position = orbitPosition(angle: angle, radius: Constant.sunToEarthDistance)
             let lineSegment = createLine(from: pastEarthContainerPosition, to: position)
             sun.addChild(lineSegment)
             pastEarthContainerPosition = position
         }
     }
     
+    private func orbitPosition(angle: Float, radius: Float) -> simd_float3 {
+        simd_float3(cos(angle), 0, -sin(angle)) * radius
+    }
+
     // create lines out of boxes
     private func createLine(from start: simd_float3, to end: simd_float3) -> ModelEntity {
         let midpoint = (start + end) / 2
@@ -184,13 +181,13 @@ class ViewController: UIViewController {
         sun.addChild(spotlight)
     }
     
-    private func createEarthEntity(radius: Float) -> ModelEntity {
-        let earthEntity = ModelEntity(mesh: .generateSphere(radius: radius))
-        let texture = try! TextureResource.load(named: "earthTexture")  // load .png image
+    private func createSphereEntity(radius: Float, textureName: String) -> ModelEntity {
+        let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
+        let texture = try! TextureResource.load(named: textureName)  // load .png image
         var material = SimpleMaterial()
         material.color = SimpleMaterial.BaseColor(texture: .init(texture))
-        earthEntity.model?.materials = [material]
-        return earthEntity
+        sphereEntity.model?.materials = [material]
+        return sphereEntity
     }
 
     private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
@@ -211,11 +208,10 @@ extension ViewController: ARSessionDelegate {  // requires arView.session.delega
         // when turning camera, camera orientation = yaw angle (for example), causing light to point in that direction;
         // after tap sets worldAnchor to camera transform, both worldAnchor and camera orientation = yaw angle;
         // if setting light orientation to camera, light strikes scene from yaw angle, rather then from camera;
-        // use temporary entity (zero orientation) to get camera relative to world, so light oriented from camera to world
+        // use identity transform entity to get camera relative to world, so light oriented from camera to world
         
         // keep light pointing in camera direction
-        let zeroOrientationEntity = Entity()
-        directionalLight.transform = zeroOrientationEntity.convert(transform: arView.cameraTransform, to: worldAnchor)
+        directionalLight.transform = Entity().convert(transform: arView.cameraTransform, to: worldAnchor)
     }
 }
 
