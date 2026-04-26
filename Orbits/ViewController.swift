@@ -21,14 +21,14 @@ struct Constant {
     static let earthRotationFactor: Float = 3  // x moon orbit rate (s/b 27.3)
     static let earthObliquity: Float = 23.44 * .pi / 180  // north pole tilt (actual)
     static let lunarOrbitInclination: Float = 5.14 * .pi / 180  // (actual)
-    static let showMoonPath = true
+    static let showMoonPath = false
 }
 
 class ViewController: UIViewController {
     
-    var sun: ModelEntity!
-    var earth: ModelEntity!
-    var moon: ModelEntity!
+    var sun: Sphere!
+    var earth: Sphere!
+    var moon: Sphere!
     var isSolarSystemCreated = false
     var pastEarthContainerPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
@@ -75,21 +75,21 @@ class ViewController: UIViewController {
     // Note: containers are used to simplify orbital equations; objects are either centered or have simple 2D orbits in their containers
     
     private func createSolarSystem() {
-        sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
+        sun = Sphere(radius: Constant.sunRadius, color: .yellow)
         sun.position.z = -1.5
         sun.setParent(worldAnchor)
 
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]  // initial position (updated in updateOrbit)
         earthContainer.setParent(sun)
 
-        earth = createSphereEntity(radius: Constant.earthRadius, textureName: "earthTexture")
+        earth = Sphere(radius: Constant.earthRadius, textureName: "earthTexture")
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earth.setParent(earthContainer)
 
         moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
         moonContainer.setParent(earthContainer)
 
-        moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
+        moon = Sphere(radius: Constant.moonRadius, color: .gray)
         moon.position = [Constant.earthToMoonDistance, 0, 0]  // initial position (updated in updateOrbit)
         moon.setParent(moonContainer)
 
@@ -187,27 +187,6 @@ class ViewController: UIViewController {
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
         sun.addChild(spotlight)
-    }
-    
-    private func createSphereEntity(radius: Float, textureName: String) -> ModelEntity {
-        let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
-        let texture = try! TextureResource.load(named: textureName)  // load .png image
-        var material = SimpleMaterial()
-        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
-        sphereEntity.model?.materials = [material]
-        return sphereEntity
-    }
-
-    private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
-        let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
-        if let color {
-            let material = SimpleMaterial(color: color, roughness: 1, isMetallic: false)  // roughness makes it more of a matte finish
-            sphereEntity.model?.materials = [material]
-        } else {
-            // default swirl pattern
-            sphereEntity.generateCollisionShapes(recursive: false)  // needed for .debugOptions
-        }
-        return sphereEntity
     }
 }
 
