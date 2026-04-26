@@ -50,8 +50,8 @@ class ViewController: UIViewController {
     // entity           parent           position w.r.t parent    orientation w.r.t parent
     // --------------   --------------   ----------------------   ---------------------------------------------
     // camera           worldAnchor      z = 30                   level
-    // sun              worldAnchor      center                   level
-    // earthContainer   sun              orbit around center      level
+    // sun              worldAnchor      centered                 level
+    // earthContainer   sun              orbit around sun         level
     // earth            earthContainer   centered                 North pole tilted (spinning about North pole)
     // moonContainer    earthContainer   centered                 tilted by lunarOrbitInclination
     // moon             moonContainer    orbit around container   level (doesn't currently spin)
@@ -75,16 +75,16 @@ class ViewController: UIViewController {
         moon = SphereEntity(radius: Constant.moonRadius, color: .gray)
         moon.position = [Constant.earthToMoonDistance, 0, 0]  // initial position (updated in updateOrbit)
         moon.setParent(moonContainer)
-        
+
         pastEarthContainerPosition = earthContainer.position
         pastMoonPosition = moon.position
-        
+
 //        let eclipticPlane = createEclipticPlane()  // plane around sun
 //        sun.addChild(eclipticPlane)
 //
 //        let lunarOrbitPlane = createLunarOrbitPlane()
 //        moonContainer.addChild(lunarOrbitPlane)
-        
+
         drawEarthContainerPath()
         
         Timer.scheduledTimer(timeInterval: 0.05,
@@ -111,7 +111,7 @@ class ViewController: UIViewController {
         if Constant.showMoonPath {
             // draw moon's path around Earth, on the fly
             if fmod(moonOrbitAngle, 0.3) > -deltaMoonAngle {  // ~1:5
-                let lineSegment = createLine(from: pastMoonPosition, to: moon.position)  // this creates circle around earth
+                let lineSegment = createLine(from: pastMoonPosition, to: moon.position)
                 lineSegment.position = moonContainer.convert(position: lineSegment.position, to: sun)
                 sun.addChild(lineSegment)
                 pastMoonPosition = moon.position
@@ -151,14 +151,14 @@ class ViewController: UIViewController {
         
         return lineEntity
     }
-    
+
     private func setupSunlight() {
         // SpotLight allows you to set position (point of origin) and orientation;
         // to get complete coverage, use 3 spotlights (every 120 deg) with 140 deg spread (good overlap)
         addSpotLight(orientation: simd_quatf(angle: 0, axis: [0, 1, 0]))
         addSpotLight(orientation: simd_quatf(angle: 2/3 * .pi, axis: [0, 1, 0]))
         addSpotLight(orientation: simd_quatf(angle: -2/3 * .pi, axis: [0, 1, 0]))
-        
+
         // lighten whole scene a little
         let directionalLight = DirectionalLight()
         directionalLight.light.intensity = 1000
@@ -170,20 +170,21 @@ class ViewController: UIViewController {
         spotlight.position = sun.position
         spotlight.orientation = orientation
         spotlight.light.intensity = 3000000
-        spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
+        spotlight.light.innerAngleInDegrees = 140
+        spotlight.light.outerAngleInDegrees = 140  // more than 160 deg starts to diminish shadow
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
         sun.addChild(spotlight)
     }
-    
+
     private func createEclipticPlane() -> ModelEntity {
         let planeEntity = ModelEntity(mesh: .generateBox(size: [10, 0, 10]))
         let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), roughness: 1, isMetallic: false)
         planeEntity.model?.materials = [material]
         return planeEntity
     }
-    
+
     private func createLunarOrbitPlane() -> ModelEntity {
         let planeEntity = ModelEntity(mesh: .generateBox(size: [3, 0, 3]))
         let material = SimpleMaterial(color: .gray.withAlphaComponent(0.3), roughness: 1, isMetallic: false)
