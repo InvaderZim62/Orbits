@@ -94,6 +94,7 @@ class ViewController: UIViewController {
                              repeats: true)
     }
     
+    // move earthContainer around sun and moon around moonContainer
     @objc func updateOrbits() {
         let deltaEarthAngle: Float = 0.004
         let deltaMoonAngle = 13.37 * deltaEarthAngle
