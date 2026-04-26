@@ -26,9 +26,9 @@ struct Constant {
 
 class ViewController: UIViewController {
     
-    var sun: Sphere!
-    var earth: Sphere!
-    var moon: Sphere!
+    var sun: SphereEntity!
+    var earth: SphereEntity!
+    var moon: SphereEntity!
     var isSolarSystemCreated = false
     var pastEarthContainerPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
@@ -75,21 +75,21 @@ class ViewController: UIViewController {
     // Note: containers are used to simplify orbital equations; objects are either centered or have simple 2D orbits in their containers
     
     private func createSolarSystem() {
-        sun = Sphere(radius: Constant.sunRadius, color: .yellow)
+        sun = SphereEntity(radius: Constant.sunRadius, color: .yellow)
         sun.position.z = -1.5
         sun.setParent(worldAnchor)
 
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]  // initial position (updated in updateOrbit)
         earthContainer.setParent(sun)
 
-        earth = Sphere(radius: Constant.earthRadius, textureName: "earthTexture")
+        earth = SphereEntity(radius: Constant.earthRadius, textureName: "earthTexture")
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earth.setParent(earthContainer)
 
         moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
         moonContainer.setParent(earthContainer)
 
-        moon = Sphere(radius: Constant.moonRadius, color: .gray)
+        moon = SphereEntity(radius: Constant.moonRadius, color: .gray)
         moon.position = [Constant.earthToMoonDistance, 0, 0]  // initial position (updated in updateOrbit)
         moon.setParent(moonContainer)
 

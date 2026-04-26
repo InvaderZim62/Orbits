@@ -1,5 +1,5 @@
 //
-//  Sphere.swift
+//  SphereEntity.swift
 //  Orbits
 //
 //  Created by Phil Stern on 4/25/26.
@@ -8,7 +8,7 @@
 import UIKit
 import RealityKit
 
-class Sphere: Entity, HasModel {
+class SphereEntity: Entity, HasModel {
     
     init(radius: Float, textureName: String) {
         super.init()
