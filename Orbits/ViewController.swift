@@ -22,9 +22,9 @@ struct Constant {
 
 class ViewController: UIViewController {
     
-    var sun: ModelEntity!
-    var earth: ModelEntity!
-    var moon: ModelEntity!
+    var sun: SphereEntity!
+    var earth: SphereEntity!
+    var moon: SphereEntity!
     var pastEarthContainerPosition = simd_float3.zero  // relative to sunAnchor
     var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
     var earthOrbitAngle: Float = 0  // orbital angle around the sun
@@ -59,20 +59,20 @@ class ViewController: UIViewController {
     // Note: containers are used to simplify orbital equations; objects are either centered or have simple 2D orbits in their containers
 
     private func createSolarSystem() {
-        sun = createSphereEntity(radius: Constant.sunRadius, color: .yellow)
+        sun = SphereEntity(radius: Constant.sunRadius, color: .yellow)
         sun.setParent(worldAnchor)
 
         earthContainer.position = [Constant.sunToEarthDistance, 0, 0]  // initial position (updated in updateOrbit)
         earthContainer.setParent(sun)
 
-        earth = createSphereEntity(radius: Constant.earthRadius, textureName: "earthTexture")
+        earth = SphereEntity(radius: Constant.earthRadius, textureName: "earthTexture")
         earth.transform.rotation = simd_quatf(angle: -Constant.earthObliquity, axis: [0, 0, 1])  // tilt North pole
         earth.setParent(earthContainer)
 
         moonContainer.transform.rotation = simd_quatf(angle: Constant.lunarOrbitInclination, axis: [0, 0, 1])  // tilt lunar orbit plane
         moonContainer.setParent(earthContainer)
 
-        moon = createSphereEntity(radius: Constant.moonRadius, color: .gray)
+        moon = SphereEntity(radius: Constant.moonRadius, color: .gray)
         moon.position = [Constant.earthToMoonDistance, 0, 0]  // initial position (updated in updateOrbit)
         moon.setParent(moonContainer)
         
@@ -175,27 +175,6 @@ class ViewController: UIViewController {
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
         sun.addChild(spotlight)
-    }
-    
-    private func createSphereEntity(radius: Float, textureName: String) -> ModelEntity {
-        let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
-        let texture = try! TextureResource.load(named: textureName)  // load .png image
-        var material = SimpleMaterial()
-        material.color = SimpleMaterial.BaseColor(texture: .init(texture))
-        sphereEntity.model?.materials = [material]
-        return sphereEntity
-    }
-
-    private func createSphereEntity(radius: Float, color: UIColor? = nil) -> ModelEntity {
-        let sphereEntity = ModelEntity(mesh: .generateSphere(radius: radius))
-        if let color {
-            let material = SimpleMaterial(color: color, roughness: 1, isMetallic: false)  // roughness makes it more of a matte finish
-            sphereEntity.model?.materials = [material]
-        } else {
-            // default swirl pattern
-            sphereEntity.generateCollisionShapes(recursive: false)  // needed for .debugOptions
-        }
-        return sphereEntity
     }
     
     private func createEclipticPlane() -> ModelEntity {

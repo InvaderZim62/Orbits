@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4A2E45432F99A7E200F5D70D /* earthTexture.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A2E45422F99A7E200F5D70D /* earthTexture.png */; };
+		4AC391B92F9DF27D0006E9DB /* SphereEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC391B82F9DF27D0006E9DB /* SphereEntity.swift */; };
 		4AD9E3F82F8DD32500667310 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3EF2F8DD32500667310 /* Assets.xcassets */; };
 		4AD9E3F92F8DD32500667310 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F02F8DD32500667310 /* LaunchScreen.storyboard */; };
 		4AD9E3FB2F8DD32500667310 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4AD9E3F52F8DD32500667310 /* Main.storyboard */; };
@@ -19,6 +20,7 @@
 
 /* Begin PBXFileReference section */
 		4A2E45422F99A7E200F5D70D /* earthTexture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = earthTexture.png; sourceTree = "<group>"; };
+		4AC391B82F9DF27D0006E9DB /* SphereEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SphereEntity.swift; sourceTree = "<group>"; };
 		4AD9E3D62F8DD30E00667310 /* Orbits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Orbits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AD9E3EE2F8DD32500667310 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4AD9E3EF2F8DD32500667310 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 			children = (
 				4AD9E3F52F8DD32500667310 /* Main.storyboard */,
 				4AD9E3F62F8DD32500667310 /* ViewController.swift */,
+				4AC391B82F9DF27D0006E9DB /* SphereEntity.swift */,
 				4AD9E3FF2F8DD3A200667310 /* ARViewCameraControl.swift */,
 				4A2E45422F99A7E200F5D70D /* earthTexture.png */,
 				4AD9E3F22F8DD32500667310 /* Supporting Files */,
@@ -157,6 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AD9E4002F8DD3A200667310 /* ARViewCameraControl.swift in Sources */,
+				4AC391B92F9DF27D0006E9DB /* SphereEntity.swift in Sources */,
 				4AD9E3FC2F8DD32500667310 /* AppDelegate.swift in Sources */,
 				4AD9E3FD2F8DD32500667310 /* SceneDelegate.swift in Sources */,
 				4AD9E3FE2F8DD32500667310 /* ViewController.swift in Sources */,
