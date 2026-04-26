@@ -182,7 +182,7 @@ class ViewController: UIViewController {
         spotlight.orientation = orientation
         spotlight.light.intensity = 1000000 * Constant.scale
         spotlight.light.innerAngleInDegrees = 140
-        spotlight.light.outerAngleInDegrees = 140  // more then 160 deg starts to diminish shadow
+        spotlight.light.outerAngleInDegrees = 140  // more than 160 deg starts to diminish shadow
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
