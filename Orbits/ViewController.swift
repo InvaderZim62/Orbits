@@ -4,15 +4,13 @@
 //
 //  Created by Phil Stern on 4/13/26.
 //
-//  To do...
-//
 
 import UIKit
 import RealityKit
 import ARKit  // needed for session(didUpdate:)
 
 struct Constant {
-    static let scale: Float = 0.2
+    static let scale: Float = 0.2  // scale the whole solar system
     static let sunRadius: Float = 0.8 * scale
     static let earthRadius: Float = 0.45 * scale
     static let moonRadius: Float = 0.3 * earthRadius
@@ -30,8 +28,8 @@ class ViewController: UIViewController {
     var earth: SphereEntity!
     var moon: SphereEntity!
     var isSolarSystemCreated = false
-    var pastEarthContainerPosition = simd_float3.zero  // relative to sunAnchor
-    var pastMoonPosition = simd_float3.zero  // relative to earthAnchor
+    var pastEarthContainerPosition = simd_float3.zero
+    var pastMoonPosition = simd_float3.zero
     var earthOrbitAngle: Float = 0  // orbital angle around the sun
     var moonOrbitAngle: Float = 0  // orbital angle around the earth
 
@@ -51,10 +49,10 @@ class ViewController: UIViewController {
         arView.addGestureRecognizer(tap)
     }
     
-    // move solar system in front of camera
+    // position solar system in front of camera after every tap
     // note: models can't be added in viewDidLoad or viewWillAppear
     @objc private func handleTap(recognizer: UITapGestureRecognizer) {
-        worldAnchor.transform = arView.cameraTransform  // re-position worldAnchor after every tap
+        worldAnchor.transform = arView.cameraTransform
         
         guard !isSolarSystemCreated else { return }  // only create solar system once
         arView.scene.addAnchor(worldAnchor)
@@ -182,7 +180,7 @@ class ViewController: UIViewController {
         spotlight.orientation = orientation
         spotlight.light.intensity = 1000000 * Constant.scale
         spotlight.light.innerAngleInDegrees = 140
-        spotlight.light.outerAngleInDegrees = 140  // more than 160 deg starts to diminish shadow
+        spotlight.light.outerAngleInDegrees = 140  // more than 160 deg starts to diminish shadows
         spotlight.light.attenuationRadius = 6
         spotlight.shadow = SpotLightComponent.Shadow()
         spotlight.shadow?.depthBias = 0.5
@@ -195,7 +193,7 @@ extension ViewController: ARSessionDelegate {  // requires ARKit and arView.sess
         // when turning camera, camera orientation = yaw angle (for example), causing light to point in that direction;
         // after tap sets worldAnchor to camera transform, both worldAnchor and camera orientation = yaw angle;
         // if setting light orientation to camera, light strikes scene from yaw angle, rather then from camera;
-        // use identity transform entity to get camera relative to world, so light oriented from camera to world
+        // use dummy entity (with identity transform) to get camera relative to world, so light oriented from camera to world
         
         // keep light pointing in camera direction
         directionalLight.transform = Entity().convert(transform: arView.cameraTransform, to: worldAnchor)
